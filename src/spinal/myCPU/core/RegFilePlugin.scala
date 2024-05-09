@@ -3,9 +3,18 @@ package myCPU.core
 import myCPU.builder.Plugin
 import spinal.core._
 import spinal.lib._
+import myCPU._
 
 class RegFilePlugin extends Plugin[Core]{
     val hello = RegNext(True)
+
+    // val debug = new Bundle{
+    //     val wen = Bool
+    //     val wnum = Bits(5 bits)
+    //     val wdata = Bits(32 bits)
+        
+    // }
+    val debug = out(new DebugBundle())
     override def setup(pipeline: Core): Unit = {
 
     }
@@ -36,7 +45,6 @@ class RegFilePlugin extends Plugin[Core]{
             insert(RD) := rdData
             insert(RJ) := rjData
             insert(RK) := rkData
-            insert(RA) := raData
         }
 
         WB plug new Area{
@@ -44,12 +52,19 @@ class RegFilePlugin extends Plugin[Core]{
 
             val regWritePort = global.regFile.writePort()
 
-            regWritePort.valid := input(REG_WRITE_VALID)
-            regWritePort.address := U(input(REG_WRITE_ADDR))(4 downto 0)
-            regWritePort.data := input(REG_WRITE_DATA)
-        }
+            val valid = input(REG_WRITE_VALID)
+            val address = (input(REG_WRITE_ADDR))(4 downto 0)
+            val data = input(REG_WRITE_DATA)
 
-        
+            debug.pc <> 0x00000000
+            debug.wen := valid
+            debug.wnum := address
+            debug.wdata := data
+
+            regWritePort.valid := valid
+            regWritePort.address := U(address)
+            regWritePort.data := data
+        }
     }
   
 }

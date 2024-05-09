@@ -6,9 +6,6 @@ import spinal.core.sim._
 object Config {
   def spinal = SpinalConfig(
     targetDirectory = "build/gen",
-    defaultConfigForClockDomains = ClockDomainConfig(
-      resetActiveLevel = HIGH
-    ),
     onlyStdLogicVectorAtTopLevelIo = true
   )
 
