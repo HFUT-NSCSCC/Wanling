@@ -4,6 +4,11 @@ import myCPU.builder.Plugin
 import spinal.core._
 import spinal.lib._
 import myCPU._
+import myCPU.constants._
+import myCPU.constants.LA32._
+import _root_.myCPU.constants.JumpType._
+import _root_.myCPU.constants.FuType._
+import myCPU.constants.JumpType._
 
 class RegFilePlugin extends Plugin[Core]{
     val hello = RegNext(True)
@@ -23,7 +28,6 @@ class RegFilePlugin extends Plugin[Core]{
         import pipeline._
         import pipeline.config._
 
-        val NR_REG = 32
         val global = pipeline plug new Area{
             val regFile = Mem(Bits(32 bits), NR_REG).addAttribute(Verilator.public)
             regFile.init(List.fill(NR_REG)(B(0, 32 bits)))
@@ -33,18 +37,17 @@ class RegFilePlugin extends Plugin[Core]{
             import ID._
 
             val inst = input(INST)
-            val rdAddr = U(inst(LA32R.rdRange))
-            val rjAddr = U(inst(LA32R.rjRange))
-            val rkAddr = U(inst(LA32R.rkRange))
-            val raAddr = U(inst(LA32R.raRange))
-            val rdData = (rdAddr === 0) ? global.regFile.readAsync(rdAddr) | B(0, 32 bits)
-            val rjData = (rjAddr === 0) ? global.regFile.readAsync(rjAddr) | B(0, 32 bits)
-            val rkData = (rkAddr === 0) ? global.regFile.readAsync(rkAddr) | B(0, 32 bits)
-            val raData = (raAddr === 0) ? global.regFile.readAsync(raAddr) | B(0, 32 bits)
+            val fuType = output(FUType)
+            val src1Addr = U(inst(LA32R.rjRange))
+            val src2Addr = (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
+
+            val src1Data = (src1Addr === 0) ? global.regFile.readAsync(src1Addr) | B(0, 32 bits)
+            val src2Data = (src2Addr === 0) ? global.regFile.readAsync(src2Addr) | B(0, 32 bits)
             
-            insert(RD) := rdData
-            insert(RJ) := rjData
-            insert(RK) := rkData
+            insert(SRC1Addr) := src1Addr.asBits
+            insert(SRC2Addr) := src2Addr.asBits
+            insert(SRC1) := src1Data
+            insert(SRC2) := src2Data
         }
 
         WB plug new Area{
@@ -53,11 +56,19 @@ class RegFilePlugin extends Plugin[Core]{
             val regWritePort = global.regFile.writePort()
 
             val valid = input(REG_WRITE_VALID)
-            val address = (input(REG_WRITE_ADDR))(4 downto 0)
-            val data = input(REG_WRITE_DATA)
+            val address = (input(JUMPType) =/= JBL) ? input(INST)(4 downto 0) | B"5'h1"
+            val aluResult = input(RESULT)
+            val memRdata = input(MEM_RDATA)
+            // val data = input(REG_WRITE_DATA)
+            val data = Select{
+                (input(FUType) === ALU) -> aluResult;
+                ((input(FUType) === LSU) && (input(MEM_READ) =/= B"0000")) -> memRdata;
+                ((input(FUType) === BRU) && ((input(JUMPType) === JBL) || (input(JUMPType) === JB))) -> (input(PC).asUInt + U(4)).asBits;
+                default -> B"32'h00000000"
+            }
 
-            debug.pc <> 0x00000000
-            debug.wen := valid
+            debug.pc := input(PC)
+            debug.we := valid
             debug.wnum := address
             debug.wdata := data
 

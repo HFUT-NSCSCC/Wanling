@@ -4,6 +4,8 @@ import spinal.core._
 import spinal.lib._
 import myCPU.builder.Plugin
 import myCPU.core.Core
+import myCPU.constants.ALUOpType
+import myCPU.pipeline.fetch.PCManagerPlugin
 
 class IntALUPlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
@@ -14,11 +16,11 @@ class IntALUPlugin extends Plugin[Core]{
         import pipeline._
         import pipeline.config._
 
-        EXE2 plug new Area{
-            import EXE2._
+        EXE1 plug new Area{
+            import EXE1._
             val IntALUOp = input(ALUOp)
             val src1 = U(input(SRC1))
-            val src2 = U(input(SRC2))
+            val src2 = input(SRC2_FROM_IMM) ? U(input(IMM)) | U(input(SRC2))
             val sa = src1(4 downto 0)
             val result = UInt(32 bits)
             switch(IntALUOp){
@@ -56,6 +58,9 @@ class IntALUPlugin extends Plugin[Core]{
                 is(SRA){
                     result := (src1.asSInt |>> sa).asUInt
                 }
+                // default{
+                //     result := 0
+                // }
             }
         
             insert(RESULT) := result.asBits
