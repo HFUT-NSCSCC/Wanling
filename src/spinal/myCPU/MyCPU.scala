@@ -8,7 +8,7 @@ import myCPU.pipeline.execute._
 
 class InstBundle() extends Bundle{
     val en = out(Bool)
-    val we = out(Bits(4 bits))
+    // val we = out(Bits(4 bits))
     val addr = out(Bits(32 bits))
     val rdata = in(Bits(32 bits))
 }
