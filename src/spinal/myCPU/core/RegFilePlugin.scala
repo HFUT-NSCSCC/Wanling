@@ -55,16 +55,29 @@ class RegFilePlugin extends Plugin[Core]{
 
             val regWritePort = global.regFile.writePort()
 
-            val valid = input(REG_WRITE_VALID)
+            val valid = input(REG_WRITE_VALID) && arbitration.notStuck
             val address = (input(JUMPType) =/= JBL) ? input(INST)(4 downto 0) | B"5'h1"
-            val aluResult = input(RESULT)
-            val memRdata = input(MEM_RDATA)
+            // val aluResult = input(RESULT)
+            // val memRdata = input(MEM_RDATA)
             // val data = input(REG_WRITE_DATA)
-            val data = Select{
-                (input(FUType) === ALU) -> aluResult;
-                ((input(FUType) === LSU) && (input(MEM_READ) =/= B"0000")) -> memRdata;
-                ((input(FUType) === BRU) && ((input(JUMPType) === JBL) || (input(JUMPType) === JB))) -> (input(PC).asUInt + U(4)).asBits;
-                default -> B"32'h00000000"
+            // val data = Select{
+            //     (input(FUType) === ALU) -> input(RESULT);
+            //     ((input(FUType) === LSU) && (input(MEM_READ) =/= B"0000")) -> input(MEM_RDATA);
+            //     ((input(FUType) === BRU) && ((input(JUMPType) === JBL) || (input(JUMPType) === JB))) -> (input(PC).asUInt + U(4)).asBits;
+            //     default -> B"32'h00000000"
+            // }
+
+            val data = Bits(32 bits)
+            switch(input(FUType)){
+                is(ALU){
+                    data := input(RESULT)
+                }
+                is(LSU){
+                    data := input(MEM_RDATA)
+                }
+                is(BRU){
+                    data := (input(PC).asUInt + U(4)).asBits
+                }
             }
 
             debug.pc := input(PC)

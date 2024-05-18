@@ -56,6 +56,8 @@ class DecoderPlugin extends Plugin[Core]{
         addDefault(MEM_READ_UE, False)
         addDefault(REG_WRITE_VALID, False)
 
+        add(LA32R.NONE, List())
+
         val alu2RInst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
             REG_WRITE_VALID -> True

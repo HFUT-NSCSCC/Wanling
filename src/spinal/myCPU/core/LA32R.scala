@@ -13,6 +13,8 @@ object LA32R {
         MaskedLiteral(replace_mask)
     }
 
+    def NONE      = MM("00000000000000000 00000 00000 00000")
+
     // 3R-type
     def ADD       = MM("00000000000100000 ----- ----- -----")
     def SUB       = MM("00000000000100010 ----- ----- -----")
