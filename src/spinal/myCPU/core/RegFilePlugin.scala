@@ -41,8 +41,8 @@ class RegFilePlugin extends Plugin[Core]{
             val src1Addr = U(inst(LA32R.rjRange))
             val src2Addr = (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
 
-            val src1Data = (src1Addr === 0) ? global.regFile.readAsync(src1Addr) | B(0, 32 bits)
-            val src2Data = (src2Addr === 0) ? global.regFile.readAsync(src2Addr) | B(0, 32 bits)
+            val src1Data = (src1Addr =/= 0) ? global.regFile.readAsync(src1Addr) | B(0, 32 bits)
+            val src2Data = (src2Addr =/= 0) ? global.regFile.readAsync(src2Addr) | B(0, 32 bits)
             
             insert(SRC1Addr) := src1Addr.asBits
             insert(SRC2Addr) := src2Addr.asBits

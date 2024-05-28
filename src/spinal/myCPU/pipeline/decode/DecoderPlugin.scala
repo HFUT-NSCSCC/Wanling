@@ -47,6 +47,7 @@ class DecoderPlugin extends Plugin[Core]{
 
         addDefault(FUType, FuType.ALU)
         addDefault(ALUOp, ALUOpType.ADD)
+        addDefault(SRC1_FROM_IMM, False)
         addDefault(SRC2_FROM_IMM, False)
         addDefault(IMMExtType, ImmExtType.NONE)
         addDefault(JUMPType, JumpType.NONE)
@@ -142,9 +143,9 @@ class DecoderPlugin extends Plugin[Core]{
 
         val alu1R1I20Inst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
-            SRC2_FROM_IMM -> True,
+            SRC1_FROM_IMM -> True,
             IMMExtType -> ImmExtType.SI20,
-            ALUOp -> ALUOpType.ADD,
+            ALUOp -> ALUOpType.LU12I,
             REG_WRITE_VALID -> True
         )
 
@@ -159,7 +160,7 @@ class DecoderPlugin extends Plugin[Core]{
 
         add(List(
             LA32R.B -> (bru0R1IInst ++ List(JUMPType -> JumpType.JB)),
-            LA32R.BL -> (bru0R1IInst ++ List(JUMPType -> JumpType.JBL)),
+            LA32R.BL -> (bru0R1IInst ++ List(JUMPType -> JumpType.JBL, REG_WRITE_VALID -> True)),
         ))
 
         add(LA32R.PCADDU12I, List(FUType -> FuType.BRU, IMMExtType -> ImmExtType.SI20, REG_WRITE_VALID -> True))

@@ -5,7 +5,7 @@ import myCPU.core.Core
 import spinal.core._
 import spinal.lib._
 import myCPU.pipeline.fetch.PCManagerPlugin
-import _root_.myCPU.constants.JumpType.JIRL
+import _root_.myCPU.constants._
 
 class BRUPlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
@@ -51,12 +51,12 @@ class BRUPlugin extends Plugin[Core]{
                 }
             }
 
-            val imm = output(IMM)
-            val jumpType = output(JUMPType)
-            val branchTarget = (jumpType =/= JIRL) ? (input(PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
+            val imm = input(IMM)
+            val jumpType = input(JUMPType)
+            val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
 
             val pcManager = service(classOf[PCManagerPlugin])
-            jump := branch
+            jump := (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
             pcManager.jump := jump
             pcManager.jumpTarget := branchTarget
 

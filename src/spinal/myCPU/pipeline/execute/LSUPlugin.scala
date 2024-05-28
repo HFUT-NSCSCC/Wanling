@@ -26,9 +26,14 @@ class LSUPlugin extends Plugin[Core]{
             data.we := input(MEM_WRITE)
             data.addr := vaddr.asBits
             // insert(MEM_RDATA) := data.rdata
+            data.wdata := input(SRC2)
+        }
+        
+        EXE2 plug new Area{
+            import EXE2._
+
             val rdata = data.rdata
             insert(MEM_RDATA) := input(MEM_READ_UE) ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
-            data.wdata := input(SRC2)
         }
     }
 }

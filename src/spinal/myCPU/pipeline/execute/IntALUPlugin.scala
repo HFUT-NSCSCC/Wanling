@@ -19,9 +19,9 @@ class IntALUPlugin extends Plugin[Core]{
         EXE1 plug new Area{
             import EXE1._
             val IntALUOp = input(ALUOp)
-            val src1 = U(input(SRC1))
+            val src1 = input(SRC1_FROM_IMM) ? U(input(IMM)) | U(input(SRC1))
             val src2 = input(SRC2_FROM_IMM) ? U(input(IMM)) | U(input(SRC2))
-            val sa = src1(4 downto 0)
+            val sa = src2(4 downto 0)
             val result = UInt(32 bits)
             switch(IntALUOp){
                 import myCPU.constants.ALUOpType._
@@ -57,6 +57,9 @@ class IntALUPlugin extends Plugin[Core]{
                 }
                 is(SRA){
                     result := (src1.asSInt |>> sa).asUInt
+                }
+                is(LU12I){
+                    result := src1 |<< 12
                 }
                 // default{
                 //     result := 0
