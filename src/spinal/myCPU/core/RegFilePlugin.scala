@@ -36,18 +36,18 @@ class RegFilePlugin extends Plugin[Core]{
         ID plug new Area{
             import ID._
 
-            val inst = input(INST)
-            val fuType = output(FUType)
+            val inst = input(fetchSignals.INST)
+            val fuType = output(decodeSignals.FUType)
             val src1Addr = U(inst(LA32R.rjRange))
             val src2Addr = (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
 
             val src1Data = (src1Addr =/= 0) ? global.regFile.readAsync(src1Addr) | B(0, 32 bits)
             val src2Data = (src2Addr =/= 0) ? global.regFile.readAsync(src2Addr) | B(0, 32 bits)
             
-            insert(SRC1Addr) := src1Addr.asBits
-            insert(SRC2Addr) := src2Addr.asBits
-            insert(SRC1) := src1Data
-            insert(SRC2) := src2Data
+            insert(decodeSignals.SRC1Addr) := src1Addr.asBits
+            insert(decodeSignals.SRC2Addr) := src2Addr.asBits
+            insert(decodeSignals.SRC1) := src1Data
+            insert(decodeSignals.SRC2) := src2Data
         }
 
         WB plug new Area{
@@ -55,8 +55,8 @@ class RegFilePlugin extends Plugin[Core]{
 
             val regWritePort = global.regFile.writePort()
 
-            val valid = input(REG_WRITE_VALID) && arbitration.notStuck
-            val address = (input(JUMPType) =/= JBL) ? input(INST)(4 downto 0) | B"5'h1"
+            val valid = input(decodeSignals.REG_WRITE_VALID) && arbitration.notStuck
+            val address = (input(writeSignals.JUMPType) =/= JBL) ? input(fetchSignals.INST)(4 downto 0) | B"5'h1"
             // val aluResult = input(RESULT)
             // val memRdata = input(MEM_RDATA)
             // val data = input(REG_WRITE_DATA)
@@ -68,19 +68,19 @@ class RegFilePlugin extends Plugin[Core]{
             // }
 
             val data = Bits(32 bits)
-            switch(input(FUType)){
+            switch(input(writeSignals.FUType)){
                 is(ALU){
-                    data := input(RESULT)
+                    data := input(writeSignals.ALU_RESLUT)
                 }
                 is(LSU){
-                    data := input(MEM_RDATA)
+                    data := input(writeSignals.MEM_RDATA)
                 }
                 is(BRU){
-                    data := (input(PC).asUInt + U(4)).asBits
+                    data := (input(fetchSignals.PC).asUInt + U(4)).asBits
                 }
             }
 
-            debug.pc := input(PC)
+            debug.pc := input(fetchSignals.PC)
             debug.we := valid
             debug.wnum := address
             debug.wdata := data

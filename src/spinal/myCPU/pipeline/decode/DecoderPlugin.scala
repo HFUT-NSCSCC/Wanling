@@ -43,7 +43,9 @@ class DecoderPlugin extends Plugin[Core]{
     }
 
     override def setup(pipeline: Core): Unit = {
-        import pipeline.config._
+        import pipeline._
+        // import pipeline.config._
+        import pipeline.decodeSignals._
 
         addDefault(FUType, FuType.ALU)
         addDefault(ALUOp, ALUOpType.ADD)
@@ -176,9 +178,9 @@ class DecoderPlugin extends Plugin[Core]{
         ID plug new Area{
             import pipeline.ID._
             val immExt = ImmExt()
-            immExt.io.inst <> input(INST)
-            immExt.io.immType <> output(IMMExtType)
-            insert(IMM) := immExt.io.imm
+            immExt.io.inst <> input(fetchSignals.INST)
+            immExt.io.immType <> output(decodeSignals.IMMExtType)
+            insert(decodeSignals.IMM) := immExt.io.imm
         }
 
         ID plug new Area{
@@ -222,7 +224,7 @@ class DecoderPlugin extends Plugin[Core]{
             }
 
             val decodedBits = Bits(stageables.foldLeft(0)(_ + _.dataType.getBitsWidth) bits)
-            decodedBits := Symplify(input(INST), spec, decodedBits.getWidth)
+            decodedBits := Symplify(input(fetchSignals.INST), spec, decodedBits.getWidth)
     
             offset = 0
             stageables.foreach(e => {

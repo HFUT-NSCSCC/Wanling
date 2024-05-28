@@ -18,10 +18,11 @@ class BRUPlugin extends Plugin[Core]{
 
         EXE1 plug new Area{
             import EXE1._
+            val bruSignals = input(exeSignals.bruSignals)
 
-            val src1 = input(SRC1).asUInt //rj
-            val src2 = input(SRC2).asUInt //rd
-            val bruOp = input(BRUOp)
+            val src1 = bruSignals.SRC1.asUInt //rj
+            val src2 = bruSignals.SRC2.asUInt //rd
+            val bruOp = bruSignals.BRUOp
 
             val branch = Bool
             val jump = Bool
@@ -51,9 +52,10 @@ class BRUPlugin extends Plugin[Core]{
                 }
             }
 
-            val imm = input(IMM)
-            val jumpType = input(JUMPType)
-            val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
+            val imm = bruSignals.IMM
+            val jumpType = bruSignals.JUMPType
+            insert(writeSignals.JUMPType) := jumpType
+            val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(fetchSignals.PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
 
             val pcManager = service(classOf[PCManagerPlugin])
             jump := (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)

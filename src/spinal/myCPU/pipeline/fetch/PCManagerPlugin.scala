@@ -33,13 +33,13 @@ class PCManagerPlugin extends Plugin[Core]{
             instBundle.en := !arbitration.isStuck
             instBundle.addr := PCval.asBits
             nextPC := jump ? jumpTarget | PCval + 4
-            insert(PC) := PCval.asBits
+            insert(fetchSignals.PC) := PCval.asBits
         }
 
         IF2 plug new Area{
             import IF2._
 
-            insert(INST) := instBundle.rdata
+            insert(fetchSignals.INST) := instBundle.rdata
         }
     }
   

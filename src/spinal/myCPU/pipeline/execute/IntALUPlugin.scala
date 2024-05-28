@@ -18,9 +18,11 @@ class IntALUPlugin extends Plugin[Core]{
 
         EXE1 plug new Area{
             import EXE1._
-            val IntALUOp = input(ALUOp)
-            val src1 = input(SRC1_FROM_IMM) ? U(input(IMM)) | U(input(SRC1))
-            val src2 = input(SRC2_FROM_IMM) ? U(input(IMM)) | U(input(SRC2))
+            val aluSignals = input(exeSignals.intALUSignals)
+
+            val IntALUOp = aluSignals.ALUOp
+            val src1 = aluSignals.SRC1_FROM_IMM ? U(aluSignals.IMM) | U(aluSignals.SRC1)
+            val src2 = aluSignals.SRC2_FROM_IMM ? U(aluSignals.IMM) | U(aluSignals.SRC2)
             val sa = src2(4 downto 0)
             val result = UInt(32 bits)
             switch(IntALUOp){
@@ -66,7 +68,7 @@ class IntALUPlugin extends Plugin[Core]{
                 // }
             }
         
-            insert(RESULT) := result.asBits
+            insert(writeSignals.ALU_RESLUT) := result.asBits
         }
     }
 }

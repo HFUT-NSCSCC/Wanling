@@ -19,21 +19,25 @@ class LSUPlugin extends Plugin[Core]{
         EXE1 plug new Area{
             import EXE1._
 
-            val src1 = input(SRC1).asUInt //rj
-            val imm = input(IMM).asUInt // imm
+            val lsuSignals = input(exeSignals.lsuSignals)
+
+            val src1 = lsuSignals.SRC1.asUInt //rj
+            val imm = lsuSignals.IMM.asUInt // imm
             val vaddr = src1 + imm
-            data.en := (input(MEM_READ) =/= B"0000" || input(MEM_WRITE) =/= B"0000")
-            data.we := input(MEM_WRITE)
+            data.en := (lsuSignals.MEM_READ =/= B"0000" || lsuSignals.MEM_WRITE =/= B"0000")
+            data.we := lsuSignals.MEM_WRITE
             data.addr := vaddr.asBits
             // insert(MEM_RDATA) := data.rdata
-            data.wdata := input(SRC2)
+            data.wdata := lsuSignals.SRC2
         }
         
         EXE2 plug new Area{
             import EXE2._
 
+            val lsuSignals = input(exeSignals.lsuSignals)
+
             val rdata = data.rdata
-            insert(MEM_RDATA) := input(MEM_READ_UE) ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
+            insert(writeSignals.MEM_RDATA) := lsuSignals.MEM_READ_UE ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
         }
     }
 }
