@@ -16,6 +16,8 @@ class IntIssuePlugin extends Plugin[Core]{
 
         ISS plug new Area{
             import ISS._
+            // 发射整数运算信号
+            // 目前不做仲裁
             val intALUSignals = new IntALUSignals()
             intALUSignals.SRC1 := input(decodeSignals.SRC1)
             intALUSignals.SRC2 := input(decodeSignals.SRC2)

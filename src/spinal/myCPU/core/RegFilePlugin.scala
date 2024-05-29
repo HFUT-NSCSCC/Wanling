@@ -20,6 +20,10 @@ class RegFilePlugin extends Plugin[Core]{
         
     // }
     val debug = out(new DebugBundle())
+
+    val wvalid = Bool
+    val waddr = Bits(RegAddrWidth bits)
+    val wdata = Bits(DataWidth bits)
     override def setup(pipeline: Core): Unit = {
 
     }
@@ -46,8 +50,9 @@ class RegFilePlugin extends Plugin[Core]{
             
             insert(decodeSignals.SRC1Addr) := src1Addr.asBits
             insert(decodeSignals.SRC2Addr) := src2Addr.asBits
-            insert(decodeSignals.SRC1) := src1Data
-            insert(decodeSignals.SRC2) := src2Data
+            insert(decodeSignals.SRC1) := (wvalid && src1Addr.asBits === waddr) ? (wdata) | src1Data
+            insert(decodeSignals.SRC2) := (wvalid && src2Addr.asBits === waddr) ? (wdata) | src2Data
+            
         }
 
         WB plug new Area{
@@ -55,8 +60,8 @@ class RegFilePlugin extends Plugin[Core]{
 
             val regWritePort = global.regFile.writePort()
 
-            val valid = input(decodeSignals.REG_WRITE_VALID) && arbitration.notStuck
-            val address = (input(writeSignals.JUMPType) =/= JBL) ? input(fetchSignals.INST)(4 downto 0) | B"5'h1"
+            wvalid := input(decodeSignals.REG_WRITE_VALID) && arbitration.notStuck
+            waddr := (input(writeSignals.JUMPType) =/= JBL) ? input(fetchSignals.INST)(4 downto 0) | B"5'h1"
             // val aluResult = input(RESULT)
             // val memRdata = input(MEM_RDATA)
             // val data = input(REG_WRITE_DATA)
@@ -67,27 +72,26 @@ class RegFilePlugin extends Plugin[Core]{
             //     default -> B"32'h00000000"
             // }
 
-            val data = Bits(32 bits)
             switch(input(writeSignals.FUType)){
                 is(ALU){
-                    data := input(writeSignals.ALU_RESLUT)
+                    wdata := input(writeSignals.ALU_RESLUT)
                 }
                 is(LSU){
-                    data := input(writeSignals.MEM_RDATA)
+                    wdata := input(writeSignals.MEM_RDATA)
                 }
                 is(BRU){
-                    data := (input(fetchSignals.PC).asUInt + U(4)).asBits
+                    wdata := (input(fetchSignals.PC).asUInt + U(4)).asBits
                 }
             }
 
             debug.pc := input(fetchSignals.PC)
-            debug.we := valid
-            debug.wnum := address
-            debug.wdata := data
+            debug.we := wvalid
+            debug.wnum := waddr
+            debug.wdata := wdata
 
-            regWritePort.valid := valid
-            regWritePort.address := U(address)
-            regWritePort.data := data
+            regWritePort.valid := wvalid
+            regWritePort.address := U(waddr)
+            regWritePort.data := wdata
         }
     }
   
