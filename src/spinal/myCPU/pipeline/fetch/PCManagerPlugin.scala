@@ -12,7 +12,7 @@ class PCManagerPlugin extends Plugin[Core]{
     val jumpTarget = UInt(32 bits)
     val jump = Bool
 
-    val instBundle = new InstBundle()
+    // val instBundle = new InstBundle()
     
     // def jump(target: UInt): Unit = {
     //     jump := True
@@ -30,17 +30,12 @@ class PCManagerPlugin extends Plugin[Core]{
             import IF1._
             val PCval = RegNextWhen[UInt](nextPC, !arbitration.isStuck, init = PC_INIT) 
             arbitration.haltByOther setWhen(ClockDomain.current.isResetActive)
-            instBundle.en := !arbitration.isStuck
-            instBundle.addr := PCval.asBits
+            // instBundle.en := !arbitration.isStuck
+            // instBundle.addr := PCval.asBits
             nextPC := jump ? jumpTarget | PCval + 4
             insert(fetchSignals.PC) := PCval.asBits
         }
 
-        IF2 plug new Area{
-            import IF2._
-
-            insert(fetchSignals.INST) := instBundle.rdata
-        }
     }
   
 }

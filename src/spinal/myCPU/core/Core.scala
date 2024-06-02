@@ -16,6 +16,8 @@ import myCPU.pipeline.writeback.WritebackSignals
 import _root_.myCPU.pipeline.issue.IntIssuePlugin
 import myCPU.pipeline.issue.BruIssuePlugin
 import myCPU.pipeline.issue.LsuIssuePlugin
+import _root_.myCPU.pipeline.fetch.FetcherPlugin
+import myCPU.pipeline.decode.ScoreBoardPlugin
 
 case class CoreConfig(){
     // object PC extends Stageable(Bits(PCWidth bits))
@@ -102,7 +104,9 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
     plugins ++= List(
         new RegFilePlugin,
         new PCManagerPlugin,
+        new FetcherPlugin,
         new DecoderPlugin,
+        new ScoreBoardPlugin,
         new IntIssuePlugin,
         new BruIssuePlugin,
         new LsuIssuePlugin,

@@ -58,8 +58,8 @@ class MyCPU(val config: CoreConfig) extends Component{
         // io.debug.wdata := regFile.debug.wdata
         io.debug <> regFile.debug
 
-        val pcManager = cpu.service(classOf[PCManagerPlugin])
-        io.inst <> pcManager.instBundle
+        val fetcherPlugin = cpu.service(classOf[FetcherPlugin])
+        io.inst <> fetcherPlugin.instBundle
 
         val LSUPlugin = cpu.service(classOf[LSUPlugin])
         io.data <> LSUPlugin.data

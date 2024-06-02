@@ -61,6 +61,8 @@ class BRUPlugin extends Plugin[Core]{
             jump := (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
             pcManager.jump := jump
             pcManager.jumpTarget := branchTarget
+            arbitration.flushNext setWhen(jump)
+
 
         }
     }
