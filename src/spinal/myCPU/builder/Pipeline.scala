@@ -122,7 +122,11 @@ trait Pipeline {
             inputDefault := stage.inserts(key)
           } else {
             val stageBefore = stages(stageIndex - 1)
-            inputDefault := RegNextWhen(stageBefore.output(key), stage.dontSample.getOrElse(key, Nil).foldLeft(!stage.arbitration.isStuck)(_ && !_)).setName(s"${stageBefore.getName()}_to_${stage.getName()}_${key.getName()}")
+            inputDefault := RegNextWhen(
+                      stageBefore.output(key), 
+                      stage.dontSample.getOrElse(key, Nil)
+                            .foldLeft(!stage.arbitration.isStuck)(_ && !_))
+                            .setName(s"${stageBefore.getName()}_to_${stage.getName()}_${key.getName()}")
           }
         }
       }
@@ -143,6 +147,17 @@ trait Pipeline {
       stage.arbitration.isStuck := stage.arbitration.haltItself || stage.arbitration.isStuckByOthers
       stage.arbitration.isMoving := !stage.arbitration.isStuck && !stage.arbitration.removeIt
       stage.arbitration.isFiring := stage.arbitration.isValid && !stage.arbitration.isStuck && !stage.arbitration.removeIt
+    }
+
+    if (stages.nonEmpty) {
+      // stage 0 特殊
+      val stage = stages(0)
+      stage.arbitration.isValid.setAsReg() init True
+      stage.arbitration.isValidOnEntry := True
+      // 立即记录removeIt
+      stage.arbitration.isValid clearWhen (stage.arbitration.removeIt)
+      // 每次新进来都是True
+      stage.arbitration.isValid setWhen (!stage.arbitration.isStuck)
     }
 
     for(stageIndex <- 1 until stages.length){

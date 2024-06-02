@@ -60,7 +60,7 @@ class RegFilePlugin extends Plugin[Core]{
 
             val regWritePort = global.regFile.writePort()
 
-            wvalid := input(decodeSignals.REG_WRITE_VALID) && arbitration.notStuck
+            wvalid := input(decodeSignals.REG_WRITE_VALID) && arbitration.isValidNotStuck
             waddr := (input(writeSignals.JUMPType) =/= JBL) ? input(fetchSignals.INST)(4 downto 0) | B"5'h1"
             // val aluResult = input(RESULT)
             // val memRdata = input(MEM_RDATA)
