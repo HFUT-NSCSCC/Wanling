@@ -52,6 +52,7 @@ class RegFilePlugin extends Plugin[Core]{
             insert(decodeSignals.SRC2Addr) := src2Addr.asBits
             insert(decodeSignals.SRC1) := (wvalid && src1Addr.asBits === waddr) ? (wdata) | src1Data
             insert(decodeSignals.SRC2) := (wvalid && src2Addr.asBits === waddr) ? (wdata) | src2Data
+            insert(decodeSignals.REG_WRITE_ADDR) := (output(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange) | B"5'h1"
             
         }
 
@@ -61,7 +62,7 @@ class RegFilePlugin extends Plugin[Core]{
             val regWritePort = global.regFile.writePort()
 
             wvalid := input(decodeSignals.REG_WRITE_VALID) && arbitration.isValidNotStuck
-            waddr := (input(writeSignals.JUMPType) =/= JBL) ? input(fetchSignals.INST)(4 downto 0) | B"5'h1"
+            waddr := input(decodeSignals.REG_WRITE_ADDR)
             // val aluResult = input(RESULT)
             // val memRdata = input(MEM_RDATA)
             // val data = input(REG_WRITE_DATA)

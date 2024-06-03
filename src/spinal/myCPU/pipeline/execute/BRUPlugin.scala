@@ -16,13 +16,18 @@ class BRUPlugin extends Plugin[Core]{
         import pipeline._
         import pipeline.config._
 
-        EXE1 plug new Area{
-            import EXE1._
-            val bruSignals = input(exeSignals.bruSignals)
+        ID plug new Area{
+            import ID._
+            // val bruSignals = input(exeSignals.bruSignals)
 
-            val src1 = bruSignals.SRC1.asUInt //rj
-            val src2 = bruSignals.SRC2.asUInt //rd
-            val bruOp = bruSignals.BRUOp
+            // val src1 = bruSignals.SRC1.asUInt //rj
+            // val src2 = bruSignals.SRC2.asUInt //rd
+            // val bruOp = bruSignals.BRUOp
+
+            val src1 = output(decodeSignals.SRC1).asUInt
+            val src2 = output(decodeSignals.SRC2).asUInt
+            val bruOp = output(decodeSignals.BRUOp)
+
 
             val branch = Bool
             val jump = Bool
@@ -52,13 +57,18 @@ class BRUPlugin extends Plugin[Core]{
                 }
             }
 
-            val imm = bruSignals.IMM
-            val jumpType = bruSignals.JUMPType
+            // val imm = bruSignals.IMM
+            // val jumpType = bruSignals.JUMPType
+            val imm = output(decodeSignals.IMM)
+            val jumpType = output(decodeSignals.JUMPType)
             insert(writeSignals.JUMPType) := jumpType
             val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(fetchSignals.PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
 
             val pcManager = service(classOf[PCManagerPlugin])
-            jump := (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
+            jump := (
+                        (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
+                    ) && arbitration.isValidNotStuck
+                            
             pcManager.jump := jump
             pcManager.jumpTarget := branchTarget
             arbitration.flushNext setWhen(jump)

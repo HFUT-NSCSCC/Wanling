@@ -146,6 +146,7 @@ class DecoderPlugin extends Plugin[Core]{
         val alu1R1I20Inst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
             SRC1_FROM_IMM -> True,
+            SRC2_FROM_IMM -> True,
             IMMExtType -> ImmExtType.SI20,
             ALUOp -> ALUOpType.LU12I,
             REG_WRITE_VALID -> True

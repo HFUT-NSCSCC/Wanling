@@ -34,7 +34,7 @@ class DecodeSignals(config: CoreConfig) {
     // object RA extends Stageable(Bits(32 bits))
     // object INST extends Stageable(Bits(InstWidth bits))
     object REG_WRITE_VALID extends Stageable(Bool)
-    // object REG_WRITE_ADDR extends Stageable(Bits(RegAddrWidth bits))
+    object REG_WRITE_ADDR extends Stageable(Bits(RegAddrWidth bits))
     // object REG_WRITE_DATA extends Stageable(Bits(DataWidth bits))
 }
 

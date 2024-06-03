@@ -25,7 +25,7 @@ class LSUPlugin extends Plugin[Core]{
             val imm = lsuSignals.IMM.asUInt // imm
             val vaddr = src1 + imm
             data.en := (lsuSignals.MEM_READ =/= B"0000" || lsuSignals.MEM_WRITE =/= B"0000")
-            data.we := lsuSignals.MEM_WRITE
+            data.we := lsuSignals.MEM_WRITE & (arbitration.isValidNotStuck.asSInt(4 bits).asBits)
             data.addr := vaddr.asBits
             // insert(MEM_RDATA) := data.rdata
             data.wdata := lsuSignals.SRC2
