@@ -5,7 +5,7 @@ import spinal.core.log2Up
 
 object LA32 {
     def PCWidth = 32
-    def PC_INIT:Long = 0x1c000000L
+    def PC_INIT:Long = 0x80000000L
 
     def InstWidth = 32
 
