@@ -17,14 +17,16 @@ class FetcherPlugin extends Plugin[Core]{
 
         IF1 plug new Area{
             import IF1._
-            instBundle.en := !arbitration.isStuck
+            instBundle.en := True
             instBundle.addr := output(fetchSignals.PC)
+            insert(fetchSignals.INST) := instBundle.rdata
         }
 
         IF2 plug new Area{
-            import IF2._
+            // import IF2._
+            // val inst = RegNextWhen[Bits](instBundle.rdata, !arbitration.isStuck, init = 0)
 
-            insert(fetchSignals.INST) := instBundle.rdata
+            // insert(fetchSignals.INST) := inst
         }
 
     }

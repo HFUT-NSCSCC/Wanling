@@ -25,7 +25,7 @@ class BRUPlugin extends Plugin[Core]{
             // val bruOp = bruSignals.BRUOp
 
             val src1 = output(decodeSignals.SRC1).asUInt
-            val src2 = output(decodeSignals.SRC2).asUInt
+            val src2 = output(decodeSignals.SRC2_FROM_IMM) ? output(decodeSignals.IMM).asUInt | output(decodeSignals.SRC2).asUInt
             val bruOp = output(decodeSignals.BRUOp)
 
 

@@ -58,22 +58,22 @@ class Stage() extends Area {
 //  def apply[T <: Data](key : Stageable[T]) : T = ???
 
   val arbitration = new Area {
-    val haltItself = False // user settable, stuck the instruction, should only be set by the instruction itself
+    val haltItself = False.addAttribute("DONT_TOUCH") // user settable, stuck the instruction, should only be set by the instruction itself
     val haltByOther =
-      False // When settable, stuck the instruction, should only be set by something else than the stucked instruction
-    val removeIt = False // When settable, unschedule the instruction as if it was never executed (no side effect)
-    val flushIt = False // When settable, unschedule the current instruction
-    val flushNext = False // When settable, unschedule instruction above in the pipeline
-    val isValid = Bool // Inform if a instruction is in the current stage
-    val isValidOnEntry = Bool // Inform if an instruction is valid when entering the current stage
-    val isStuck = Bool // Inform if the instruction is stuck (haltItself || haltByOther)
+      False.addAttribute("DONT_TOUCH") // When settable, stuck the instruction, should only be set by something else than the stucked instruction
+    val removeIt = False.addAttribute("DONT_TOUCH") // When settable, unschedule the instruction as if it was never executed (no side effect)
+    val flushIt = False.addAttribute("DONT_TOUCH") // When settable, unschedule the current instruction
+    val flushNext = False.addAttribute("DONT_TOUCH") // When settable, unschedule instruction above in the pipeline
+    val isValid = Bool.addAttribute("DONT_TOUCH") // Inform if a instruction is in the current stage
+    val isValidOnEntry = Bool.addAttribute("DONT_TOUCH") // Inform if an instruction is valid when entering the current stage
+    val isStuck = Bool.addAttribute("DONT_TOUCH") // Inform if the instruction is stuck (haltItself || haltByOther)
     val notStuck = !isStuck
-    val isStuckByOthers = Bool // Inform if the instruction is stuck by sombody else
+    val isStuckByOthers = Bool.addAttribute("DONT_TOUCH") // Inform if the instruction is stuck by sombody else
     val isRemoved = removeIt // Inform if the instruction is going to be unschedule the current cycle
-    val isFlushed = Bool // Inform if the instruction is flushed (flushAll set in the current or subsequents stages)
-    val isMoving = Bool // Inform if the instruction is going somewere else (next stage or unscheduled)
+    val isFlushed = Bool.addAttribute("DONT_TOUCH") // Inform if the instruction is flushed (flushAll set in the current or subsequents stages)
+    val isMoving = Bool.addAttribute("DONT_TOUCH") // Inform if the instruction is going somewere else (next stage or unscheduled)
     val isFiring =
-      Bool // Inform if the current instruction will go to the next stage the next cycle (isValid && !isStuck && !removeIt)
+      Bool.addAttribute("DONT_TOUCH") // Inform if the current instruction will go to the next stage the next cycle (isValid && !isStuck && !removeIt)
     def isValidNotStuck: Bool = isValid && !isStuck
   }
 

@@ -5,6 +5,7 @@ import myCPU.core.Core
 import myCPU.pipeline.execute.BRUSignals
 import spinal.core._
 
+
 class BruIssuePlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
 

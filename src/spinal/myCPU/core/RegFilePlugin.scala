@@ -11,19 +11,17 @@ import _root_.myCPU.constants.FuType._
 import myCPU.constants.JumpType._
 
 class RegFilePlugin extends Plugin[Core]{
-    val hello = RegNext(True)
-
     // val debug = new Bundle{
     //     val wen = Bool
     //     val wnum = Bits(5 bits)
     //     val wdata = Bits(32 bits)
         
     // }
-    val debug = out(new DebugBundle())
+    // val debug = out(new DebugBundle())
 
     val wvalid = Bool
-    val waddr = Bits(RegAddrWidth bits)
-    val wdata = Bits(DataWidth bits)
+    val waddr = Bits(RegAddrWidth bits).addAttribute("DONT_TOUCH")
+    val wdata = Bits(DataWidth bits).addAttribute("DONT_TOUCH")
     override def setup(pipeline: Core): Unit = {
 
     }
@@ -33,7 +31,7 @@ class RegFilePlugin extends Plugin[Core]{
         import pipeline.config._
 
         val global = pipeline plug new Area{
-            val regFile = Mem(Bits(32 bits), NR_REG).addAttribute(Verilator.public)
+            val regFile = Mem(Bits(32 bits), NR_REG).addAttribute(Verilator.public).addAttribute("DONT_TOUCH")
             regFile.init(List.fill(NR_REG)(B(0, 32 bits)))
         }
 
@@ -45,13 +43,13 @@ class RegFilePlugin extends Plugin[Core]{
             val src1Addr = U(inst(LA32R.rjRange))
             val src2Addr = (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
 
-            val src1Data = (src1Addr =/= 0) ? global.regFile.readAsync(src1Addr) | B(0, 32 bits)
-            val src2Data = (src2Addr =/= 0) ? global.regFile.readAsync(src2Addr) | B(0, 32 bits)
+            val src1Data = (src1Addr === 0) ? B(0, 32 bits) | global.regFile.readAsync(src1Addr)
+            val src2Data = (src2Addr === 0) ? B(0, 32 bits) | global.regFile.readAsync(src2Addr)
             
             insert(decodeSignals.SRC1Addr) := src1Addr.asBits
             insert(decodeSignals.SRC2Addr) := src2Addr.asBits
-            insert(decodeSignals.SRC1) := (wvalid && src1Addr.asBits === waddr) ? (wdata) | src1Data
-            insert(decodeSignals.SRC2) := (wvalid && src2Addr.asBits === waddr) ? (wdata) | src2Data
+            insert(decodeSignals.SRC1) := (wvalid && src1Addr.asBits === waddr && !output(decodeSignals.SRC1_FROM_IMM)) ? (wdata) | src1Data
+            insert(decodeSignals.SRC2) := (wvalid && src2Addr.asBits === waddr && !output(decodeSignals.SRC2_FROM_IMM)) ? (wdata) | src2Data
             insert(decodeSignals.REG_WRITE_ADDR) := (output(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange) | B"5'h1"
             
         }
@@ -75,7 +73,7 @@ class RegFilePlugin extends Plugin[Core]{
 
             switch(input(writeSignals.FUType)){
                 is(ALU){
-                    wdata := input(writeSignals.ALU_RESLUT)
+                    wdata := input(writeSignals.ALU_RESULT)
                 }
                 is(LSU){
                     wdata := input(writeSignals.MEM_RDATA)
@@ -85,10 +83,10 @@ class RegFilePlugin extends Plugin[Core]{
                 }
             }
 
-            debug.pc := input(fetchSignals.PC)
-            debug.we := wvalid
-            debug.wnum := waddr
-            debug.wdata := wdata
+            // debug.pc := input(fetchSignals.PC)
+            // debug.we := wvalid
+            // debug.wnum := waddr
+            // debug.wdata := wdata
 
             regWritePort.valid := wvalid
             regWritePort.address := U(waddr)

@@ -36,7 +36,7 @@ class MyCPU(val config: CoreConfig) extends Component{
         val interrupt = in(Bits(8 bits))
         val inst = new InstBundle()
         val data = new DataBundle()
-        val debug = out(new DebugBundle())
+        // val debug = out(new DebugBundle())
     }
 
     val defaultClockDomain = ClockDomain(
@@ -56,7 +56,7 @@ class MyCPU(val config: CoreConfig) extends Component{
         // io.debug.wen := regFile.debug.wen
         // io.debug.wnum := regFile.debug.wnum
         // io.debug.wdata := regFile.debug.wdata
-        io.debug <> regFile.debug
+        // io.debug <> regFile.debug
 
         val fetcherPlugin = cpu.service(classOf[FetcherPlugin])
         io.inst <> fetcherPlugin.instBundle

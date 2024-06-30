@@ -11,3 +11,11 @@ verilog:
 	sudo cp $(GEN)/$(REG_INIT_FILE) $(RELEASE_PACK)/thinpad_top.srcs/sources_1/new/myCPU
 	# 复制生成的顶层文件
 	sudo cp $(GEN_TOP) $(RELEASE_PACK)/thinpad_top.srcs/sources_1/new/myCPU
+
+archive: 
+	sbt "runMain $(MAIN)"
+	sed -i "s/$(REG_INIT_FILE)/\/builds\/nscscc2024\/2024837\/thinpad_top.srcs\/sources_1\/new\/myCPU\/$(REG_INIT_FILE)/g" $(GEN_TOP)
+	# 复制寄存器初始化文件
+	sudo cp $(GEN)/$(REG_INIT_FILE) $(RELEASE_PACK)/thinpad_top.srcs/sources_1/new/myCPU
+	# 复制生成的顶层文件
+	sudo cp $(GEN_TOP) $(RELEASE_PACK)/thinpad_top.srcs/sources_1/new/myCPU

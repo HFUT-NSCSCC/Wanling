@@ -68,7 +68,7 @@ class IntALUPlugin extends Plugin[Core]{
                 // }
             }
         
-            insert(writeSignals.ALU_RESLUT) := result.asBits
+            insert(writeSignals.ALU_RESULT) := result.asBits
         }
     }
 }

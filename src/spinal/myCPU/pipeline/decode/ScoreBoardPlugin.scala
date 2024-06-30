@@ -5,6 +5,7 @@ import myCPU.core.Core
 import spinal.core._
 import _root_.myCPU.constants.BRUOpType
 import myCPU.constants.JumpType
+import myCPU.constants.FuType
 
 class ScoreBoardPlugin extends Plugin[Core]{
     // 一个32位的记分牌, 记录每个寄存器的状态
@@ -21,23 +22,25 @@ class ScoreBoardPlugin extends Plugin[Core]{
             import ID._
 
 
-            val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR).asUInt
-            val setValid = output(decodeSignals.REG_WRITE_VALID) && regWriteAddr =/= 0 && arbitration.isValidNotStuck
+            val regWriteAddr = output(decodeSignals.REG_WRITE_ADDR).asUInt
+            // 确保该指令会修改寄存器：
+            // 指令为ALU指令或为BL指令
+            val setValid = (output(decodeSignals.REG_WRITE_VALID)) && (regWriteAddr =/= 0) && (arbitration.isValidNotStuck)
             when(setValid){
                 scoreBoard(regWriteAddr) := True
             }
 
 
             arbitration.haltItself setWhen(
-                (scoreBoard(output(decodeSignals.SRC1Addr).asUInt) 
+                ((scoreBoard(output(decodeSignals.SRC1Addr).asUInt) 
                         && !output(decodeSignals.SRC1_FROM_IMM)) 
                 || 
                 (scoreBoard(output(decodeSignals.SRC2Addr).asUInt) 
-                        && !output(decodeSignals.SRC2_FROM_IMM)) )
+                        && !output(decodeSignals.SRC2_FROM_IMM)) ))
         }
 
-        EXE3 plug new Area{
-            import EXE3._
+        EXE2 plug new Area{
+            import EXE2._
             val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR).asUInt
             val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddr =/= 0 && arbitration.isValidNotStuck
             when(clrValid){

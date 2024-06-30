@@ -18,6 +18,7 @@ import myCPU.pipeline.issue.BruIssuePlugin
 import myCPU.pipeline.issue.LsuIssuePlugin
 import _root_.myCPU.pipeline.fetch.FetcherPlugin
 import myCPU.pipeline.decode.ScoreBoardPlugin
+import _root_.myCPU.pipeline.issue.IssuePlugin
 
 case class CoreConfig(){
     // object PC extends Stageable(Bits(PCWidth bits))
@@ -93,7 +94,7 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
     val ISS  = newStage()
     val EXE1 = newStage()
     val EXE2 = newStage()
-    val EXE3 = newStage()
+    // val EXE3 = newStage()
     val WB   = newStage()
 
     val fetchSignals = new FetchSignals(config)
@@ -107,8 +108,9 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
         new FetcherPlugin,
         new DecoderPlugin,
         new ScoreBoardPlugin,
+        // new IssuePlugin,
         new IntIssuePlugin,
-        new BruIssuePlugin,
+        // new BruIssuePlugin,
         new LsuIssuePlugin,
         new IntALUPlugin,
         new LSUPlugin,
