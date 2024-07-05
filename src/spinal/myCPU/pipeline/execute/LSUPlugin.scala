@@ -32,6 +32,17 @@ class LSUPlugin extends Plugin[Core]{
             // val wdata = RegNextWhen[Bits](lsuSignals.SRC2, we.asBool, init = 0)
             data.wdata := lsuSignals.SRC2
             val rdata = data.rdata
+            // switch(lsuSignals.MEM_READ){
+            //     is(B"0001"){
+            //         rdata := Mux(lsuSignals.MEM_READ_UE, data.rdata(7 downto 0).asUInt.resize(32 bits).asBits, data.rdata(7 downto 0).asSInt.resize(32 bits).asBits)
+            //     }
+            //     is(B"0011"){
+            //         rdata := Mux(lsuSignals.MEM_READ_UE, data.rdata(15 downto 0).asUInt.resize(32 bits).asBits, data.rdata(15 downto 0).asSInt.resize(32 bits).asBits)
+            //     }
+            //     default{
+            //         rdata := data.rdata
+            //     }
+            // }
             // insert(writeSignals.MEM_RDATA) := lsuSignals.MEM_READ_UE ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
             insert(writeSignals.MEM_RDATA) := rdata
         }
@@ -39,11 +50,24 @@ class LSUPlugin extends Plugin[Core]{
         EXE2 plug new Area{
             import EXE2._
 
-            // val lsuSignals = input(exeSignals.lsuSignals)
-            // val rdata = RegNextWhen[Bits](data.rdata, !arbitration.isStuck, init = 0)
-            // // TODO: 这似乎并不能实现真正的扩展，读进来的rdata都是32位的
-            // insert(writeSignals.MEM_RDATA) := lsuSignals.MEM_READ_UE ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
+            val lsuSignals = input(exeSignals.lsuSignals)
+            val rdata_from_exe1 = input(writeSignals.MEM_RDATA)
 
+            val rdata_ext = Bits(32 bits)
+            switch(lsuSignals.MEM_READ){
+                is(B"0001"){
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rdata_from_exe1(7 downto 0).asUInt.resize(32 bits).asBits, rdata_from_exe1(7 downto 0).asSInt.resize(32 bits).asBits)
+                }
+                is(B"0011"){
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rdata_from_exe1(15 downto 0).asUInt.resize(32 bits).asBits, rdata_from_exe1(15 downto 0).asSInt.resize(32 bits).asBits)
+                }
+                default{
+                    rdata_ext := rdata_from_exe1
+                }
+            }
+            // insert(writeSignals.MEM_rdata_ext) := lsuSignals.MEM_READ_UE ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
+            output(writeSignals.MEM_RDATA).allowOverride
+            output(writeSignals.MEM_RDATA) := rdata_ext
 
         }
     }
