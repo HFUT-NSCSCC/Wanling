@@ -89,7 +89,7 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
     def newStage(): Stage = {val s = new Stage; stages += s; s}
 
     val IF1  = newStage()
-    val IF2  = newStage()
+    // val IF2  = newStage()
     val ID   = newStage()
     val ISS  = newStage()
     val EXE1 = newStage()

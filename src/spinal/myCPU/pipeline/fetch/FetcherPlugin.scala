@@ -22,12 +22,11 @@ class FetcherPlugin extends Plugin[Core]{
             insert(fetchSignals.INST) := instBundle.rdata
         }
 
-        IF2 plug new Area{
-            // import IF2._
-            // val inst = RegNextWhen[Bits](instBundle.rdata, !arbitration.isStuck, init = 0)
+        // IF2 plug new Area{
+        //     // import IF2._
+        //     // val inst = RegNextWhen[Bits](instBundle.rdata, !arbitration.isStuck, init = 0)
 
-            // insert(fetchSignals.INST) := inst
-        }
+        // }
 
     }
   
