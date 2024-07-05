@@ -58,6 +58,8 @@ final case class LSUSignals() extends Bundle {
     val MEM_READ = Bits(4 bits)
     val MEM_READ_UE = Bool
     val MEM_WRITE = Bits(4 bits)
+    val MEM_WRITE_DATA = Bits(DataWidth bits)
+    val MEM_WRITE_ADDR = Bits(DataWidth bits)
     // val MEM_RDATA = Bits(DataWidth bits)
     // val REG_WRITE_VALID = Bool
     // val REG_WRITE_ADDR = Bits(RegAddrWidth bits)

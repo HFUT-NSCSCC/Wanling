@@ -32,18 +32,6 @@ class LSUPlugin extends Plugin[Core]{
             // val wdata = RegNextWhen[Bits](lsuSignals.SRC2, we.asBool, init = 0)
             data.wdata := lsuSignals.SRC2
             val rdata = data.rdata
-            // switch(lsuSignals.MEM_READ){
-            //     is(B"0001"){
-            //         rdata := Mux(lsuSignals.MEM_READ_UE, data.rdata(7 downto 0).asUInt.resize(32 bits).asBits, data.rdata(7 downto 0).asSInt.resize(32 bits).asBits)
-            //     }
-            //     is(B"0011"){
-            //         rdata := Mux(lsuSignals.MEM_READ_UE, data.rdata(15 downto 0).asUInt.resize(32 bits).asBits, data.rdata(15 downto 0).asSInt.resize(32 bits).asBits)
-            //     }
-            //     default{
-            //         rdata := data.rdata
-            //     }
-            // }
-            // insert(writeSignals.MEM_RDATA) := lsuSignals.MEM_READ_UE ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
             insert(writeSignals.MEM_RDATA) := rdata
         }
         
@@ -65,9 +53,7 @@ class LSUPlugin extends Plugin[Core]{
                     rdata_ext := rdata_from_exe1
                 }
             }
-            // insert(writeSignals.MEM_rdata_ext) := lsuSignals.MEM_READ_UE ? rdata.asUInt.resize(32 bits).asBits | rdata.asSInt.resize(32 bits).asBits
-            output(writeSignals.MEM_RDATA).allowOverride
-            output(writeSignals.MEM_RDATA) := rdata_ext
+            insert(writeSignals.MEM_RDATA_EXTENDED) := rdata_ext
 
         }
     }

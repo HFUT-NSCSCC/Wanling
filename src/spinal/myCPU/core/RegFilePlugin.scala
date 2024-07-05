@@ -76,7 +76,7 @@ class RegFilePlugin extends Plugin[Core]{
                     wdata := input(writeSignals.ALU_RESULT)
                 }
                 is(LSU){
-                    wdata := input(writeSignals.MEM_RDATA)
+                    wdata := input(writeSignals.MEM_RDATA_EXTENDED)
                 }
                 is(BRU){
                     wdata := (input(fetchSignals.PC).asUInt + U(4)).asBits

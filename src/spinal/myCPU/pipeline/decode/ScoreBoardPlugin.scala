@@ -39,8 +39,8 @@ class ScoreBoardPlugin extends Plugin[Core]{
                         && !output(decodeSignals.SRC2_FROM_IMM)) ))
         }
 
-        EXE2 plug new Area{
-            import EXE2._
+        EXE3 plug new Area{
+            import EXE3._
             val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR).asUInt
             val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddr =/= 0 && arbitration.isValidNotStuck
             when(clrValid){
