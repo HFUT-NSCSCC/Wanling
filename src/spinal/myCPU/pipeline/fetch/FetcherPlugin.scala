@@ -17,9 +17,9 @@ class FetcherPlugin extends Plugin[Core]{
 
         IF1 plug new Area{
             import IF1._
-            instBundle.en := True
+            instBundle.en := arbitration.isValidNotStuck
             instBundle.addr := output(fetchSignals.PC)
-            insert(fetchSignals.INST) := instBundle.rdata
+            insert(fetchSignals.INST) := instBundle.en ? instBundle.rdata | B(0, 32 bits)
         }
 
         // IF2 plug new Area{

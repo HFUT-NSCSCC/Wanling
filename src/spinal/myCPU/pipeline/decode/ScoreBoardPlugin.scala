@@ -6,6 +6,7 @@ import spinal.core._
 import _root_.myCPU.constants.BRUOpType
 import myCPU.constants.JumpType
 import myCPU.constants.FuType
+import myCPU.constants.ALUOpSrc
 
 class ScoreBoardPlugin extends Plugin[Core]{
     // 一个32位的记分牌, 记录每个寄存器的状态
@@ -33,10 +34,10 @@ class ScoreBoardPlugin extends Plugin[Core]{
 
             arbitration.haltItself setWhen(
                 ((scoreBoard(output(decodeSignals.SRC1Addr).asUInt) 
-                        && !output(decodeSignals.SRC1_FROM_IMM)) 
+                        && (output(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) 
                 || 
                 (scoreBoard(output(decodeSignals.SRC2Addr).asUInt) 
-                        && !output(decodeSignals.SRC2_FROM_IMM)) ))
+                        && (output(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ))
         }
 
         EXE3 plug new Area{

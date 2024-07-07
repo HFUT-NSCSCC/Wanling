@@ -25,7 +25,13 @@ class BRUPlugin extends Plugin[Core]{
             // val bruOp = bruSignals.BRUOp
 
             val src1 = output(decodeSignals.SRC1).asUInt
-            val src2 = output(decodeSignals.SRC2_FROM_IMM) ? output(decodeSignals.IMM).asUInt | output(decodeSignals.SRC2).asUInt
+            val src2_from = output(decodeSignals.SRC2_FROM)
+            val src2 = Select(
+                (src2_from === ALUOpSrc.REG) -> U(output(decodeSignals.SRC2)),
+                (src2_from === ALUOpSrc.IMM) -> U(output(decodeSignals.IMM)),
+                (src2_from === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
+                default -> U(0, 32 bits)
+            )
             val bruOp = output(decodeSignals.BRUOp)
 
 
@@ -63,6 +69,7 @@ class BRUPlugin extends Plugin[Core]{
             val jumpType = output(decodeSignals.JUMPType)
             insert(writeSignals.JUMPType) := jumpType
             val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(fetchSignals.PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
+            insert(decodeSignals.RESULT) := branchTarget.asBits
 
             val pcManager = service(classOf[PCManagerPlugin])
             jump := (
@@ -72,8 +79,6 @@ class BRUPlugin extends Plugin[Core]{
             pcManager.jump := jump
             pcManager.jumpTarget := branchTarget
             arbitration.flushNext setWhen(jump)
-
-
         }
     }
   

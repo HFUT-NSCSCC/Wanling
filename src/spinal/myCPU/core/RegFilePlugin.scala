@@ -48,8 +48,8 @@ class RegFilePlugin extends Plugin[Core]{
             
             insert(decodeSignals.SRC1Addr) := src1Addr.asBits
             insert(decodeSignals.SRC2Addr) := src2Addr.asBits
-            insert(decodeSignals.SRC1) := (wvalid && src1Addr.asBits === waddr && !output(decodeSignals.SRC1_FROM_IMM)) ? (wdata) | src1Data
-            insert(decodeSignals.SRC2) := (wvalid && src2Addr.asBits === waddr && !output(decodeSignals.SRC2_FROM_IMM)) ? (wdata) | src2Data
+            insert(decodeSignals.SRC1) := (wvalid && src1Addr.asBits === waddr && (output(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) ? (wdata) | src1Data
+            insert(decodeSignals.SRC2) := (wvalid && src2Addr.asBits === waddr && (output(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ? (wdata) | src2Data
             insert(decodeSignals.REG_WRITE_ADDR) := (output(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange) | B"5'h1"
             
         }

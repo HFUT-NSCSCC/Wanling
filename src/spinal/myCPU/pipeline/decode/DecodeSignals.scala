@@ -19,8 +19,8 @@ class DecodeSignals(config: CoreConfig) {
     object SRC1 extends Stageable(Bits(DataWidth bits))
     object SRC2 extends Stageable(Bits(DataWidth bits))
     object ALUOp extends Stageable(ALUOpType())
-    object SRC1_FROM_IMM extends Stageable(Bool)
-    object SRC2_FROM_IMM extends Stageable(Bool)
+    object SRC1_FROM extends Stageable(ALUOpSrc())
+    object SRC2_FROM extends Stageable(ALUOpSrc())
     object RESULT extends Stageable(Bits(DataWidth bits))
 
     // BRU

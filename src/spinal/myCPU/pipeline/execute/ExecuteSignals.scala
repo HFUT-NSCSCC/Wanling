@@ -7,6 +7,7 @@ import myCPU.core.CoreConfig
 import myCPU.constants.ALUOpType
 import myCPU.constants.BRUOpType
 import myCPU.constants.JumpType
+import myCPU.constants.ALUOpSrc
 
 class ExecuteSignals(config: CoreConfig) {
     object intALUSignals extends Stageable(IntALUSignals())
@@ -22,8 +23,8 @@ final case class IntALUSignals() extends Bundle{
     val SRC2 = Bits(DataWidth bits)
     val ALUOp = ALUOpType()
     val IMM = Bits(DataWidth bits)
-    val SRC1_FROM_IMM = Bool
-    val SRC2_FROM_IMM = Bool
+    val SRC1_FROM = ALUOpSrc()
+    val SRC2_FROM = ALUOpSrc()
     // val RESULT = Bits(DataWidth bits)
 
     // object SRC1Addr extends Stageable(Bits(RegAddrWidth bits))
@@ -42,8 +43,6 @@ final case class BRUSignals() extends Bundle {
     val BRUOp = BRUOpType()
     val IMM = Bits(DataWidth bits)
     val JUMPType = JumpType()
-
-
 
     // object SRC1 extends Stageable(Bits(DataWidth bits))
     // object SRC2 extends Stageable(Bits(DataWidth bits))
@@ -72,4 +71,5 @@ final case class MemSignals() extends Bundle{
     val MEM_WE = Bits(4 bits)
     val MEM_ADDR = Bits(DataWidth bits)
     val MEM_WDATA = Bits(DataWidth bits)
+    val MEM_MASK = Bits(4 bits)
 }

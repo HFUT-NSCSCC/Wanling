@@ -6,6 +6,7 @@ import myCPU.builder.Plugin
 import myCPU.core.Core
 import myCPU.constants.ALUOpType
 import myCPU.pipeline.fetch.PCManagerPlugin
+import myCPU.constants.ALUOpSrc
 
 class IntALUPlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
@@ -21,8 +22,18 @@ class IntALUPlugin extends Plugin[Core]{
             val aluSignals = input(exeSignals.intALUSignals)
 
             val IntALUOp = aluSignals.ALUOp
-            val src1 = aluSignals.SRC1_FROM_IMM ? U(aluSignals.IMM) | U(aluSignals.SRC1)
-            val src2 = aluSignals.SRC2_FROM_IMM ? U(aluSignals.IMM) | U(aluSignals.SRC2)
+            val src1 = Select(
+                (aluSignals.SRC1_FROM === ALUOpSrc.REG) -> U(aluSignals.SRC1),
+                (aluSignals.SRC1_FROM === ALUOpSrc.IMM) -> U(aluSignals.IMM),
+                (aluSignals.SRC1_FROM === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
+                default -> U(0, 32 bits)
+            )
+            val src2 = Select(
+                (aluSignals.SRC2_FROM === ALUOpSrc.REG) -> U(aluSignals.SRC2),
+                (aluSignals.SRC2_FROM === ALUOpSrc.IMM) -> U(aluSignals.IMM),
+                (aluSignals.SRC2_FROM === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
+                default -> U(0, 32 bits)
+            )
             val sa = src2(4 downto 0)
             val result = UInt(32 bits)
             switch(IntALUOp){
