@@ -34,8 +34,8 @@ class LSUPlugin extends Plugin[Core]{
             memSignals.MEM_WE := lsuSignals.MEM_WRITE & (arbitration.isValidNotStuck.asSInt.resize(4 bits).asBits)
             memSignals.MEM_WDATA := lsuSignals.SRC2
             memSignals.MEM_MASK := Select(
-                (lsuSignals.MEM_READ === B"0001" || lsuSignals.MEM_WRITE === B"0001") -> (B"0001" << vaddr(1 downto 0))(3 downto 0),
-                (lsuSignals.MEM_READ === B"0011" || lsuSignals.MEM_WRITE === B"0011") -> (B"0011" << vaddr(1 downto 0))(3 downto 0),
+                (lsuSignals.MEM_READ === B"0001" || lsuSignals.MEM_WRITE === B"0001") -> (B"0001" |<< vaddr(1 downto 0)),
+                (lsuSignals.MEM_READ === B"0011" || lsuSignals.MEM_WRITE === B"0011") -> (B"0011" |<< vaddr(1 downto 0)),
                 (lsuSignals.MEM_READ === B"1111" || lsuSignals.MEM_WRITE === B"1111") -> B"1111",
                 default -> B"0000"
             )
@@ -50,7 +50,7 @@ class LSUPlugin extends Plugin[Core]{
             val memSignals = input(exeSignals.memSignals)
             val lsuSignals = input(exeSignals.lsuSignals)
             data.addr := memSignals.MEM_ADDR
-            IF1.arbitration.haltItself setWhen(data_en && !memSignals.MEM_ADDR(22))
+            IF1.arbitration.haltItself setWhen(data_en && !memSignals.MEM_ADDR(22) && arbitration.isValidNotStuck)
             // memory read
             val rawData = Select(
                 (lsuSignals.MEM_READ =/= B"0000") -> data.rdata,
@@ -60,22 +60,34 @@ class LSUPlugin extends Plugin[Core]{
             val rdata_ext = Bits(32 bits)
             switch(memSignals.MEM_MASK){
                 is(B"0001"){
-                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rawData(7 downto 0).asUInt.resize(32 bits).asBits, rawData(7 downto 0).asSInt.resize(32 bits).asBits)
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, 
+                                    rawData(7 downto 0).asUInt.resize(32 bits).asBits, 
+                                    rawData(7 downto 0).asSInt.resize(32 bits).asBits)
                 }
                 is(B"0010"){
-                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rawData(15 downto 8).asUInt.resize(32 bits).asBits, rawData(15 downto 8).asSInt.resize(32 bits).asBits)
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, 
+                                    rawData(15 downto 8).asUInt.resize(32 bits).asBits, 
+                                    rawData(15 downto 8).asSInt.resize(32 bits).asBits)
                 }
                 is(B"0100"){
-                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rawData(23 downto 16).asUInt.resize(32 bits).asBits, rawData(23 downto 16).asSInt.resize(32 bits).asBits)
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, 
+                                    rawData(23 downto 16).asUInt.resize(32 bits).asBits, 
+                                    rawData(23 downto 16).asSInt.resize(32 bits).asBits)
                 }
                 is(B"1000"){
-                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rawData(31 downto 24).asUInt.resize(32 bits).asBits, rawData(31 downto 24).asSInt.resize(32 bits).asBits)
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, 
+                                    rawData(31 downto 24).asUInt.resize(32 bits).asBits, 
+                                    rawData(31 downto 24).asSInt.resize(32 bits).asBits)
                 }
                 is(B"0011"){
-                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rawData(15 downto 0).asUInt.resize(32 bits).asBits, rawData(15 downto 0).asSInt.resize(32 bits).asBits)
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, 
+                                    rawData(15 downto 0).asUInt.resize(32 bits).asBits, 
+                                    rawData(15 downto 0).asSInt.resize(32 bits).asBits)
                 }
                 is(B"1100"){
-                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, rawData(31 downto 16).asUInt.resize(32 bits).asBits, rawData(15 downto 0).asSInt.resize(32 bits).asBits)
+                    rdata_ext := Mux(lsuSignals.MEM_READ_UE, 
+                                    rawData(31 downto 16).asUInt.resize(32 bits).asBits, 
+                                    rawData(31 downto 16).asSInt.resize(32 bits).asBits)
                 }
                 default{
                     rdata_ext := rawData

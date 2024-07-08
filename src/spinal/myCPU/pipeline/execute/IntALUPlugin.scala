@@ -72,7 +72,7 @@ class IntALUPlugin extends Plugin[Core]{
                     result := (src1.asSInt |>> sa).asUInt
                 }
                 is(LU12I){
-                    result := src1 |<< 12
+                    result := src1
                 }
                 // default{
                 //     result := 0

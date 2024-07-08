@@ -97,7 +97,7 @@ class DecoderPlugin extends Plugin[Core]{
             LA32R.SRAI -> (alu2R1I8Inst ++ List(ALUOp -> ALUOpType.SRA)),
         ))
 
-        val alu2R1I12Inst = List[(Stageable[_ <: BaseType], Any)](
+        val alu2R1I12SInst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
             SRC1_FROM -> ALUOpSrc.REG,
             SRC2_FROM -> ALUOpSrc.IMM,
@@ -106,32 +106,51 @@ class DecoderPlugin extends Plugin[Core]{
         )
 
         add(List(
-            LA32R.ADDI  -> (alu2R1I12Inst ++ List(ALUOp -> ALUOpType.ADD)),
-            LA32R.SLTI  -> (alu2R1I12Inst ++ List(ALUOp -> ALUOpType.SLT)),
-            LA32R.SLTUI -> (alu2R1I12Inst ++ List(ALUOp -> ALUOpType.SLTU)),
-            LA32R.ANDI  -> (alu2R1I12Inst ++ List(ALUOp -> ALUOpType.AND)),
-            LA32R.ORI   -> (alu2R1I12Inst ++ List(ALUOp -> ALUOpType.OR)),
-            LA32R.XORI  -> (alu2R1I12Inst ++ List(ALUOp -> ALUOpType.XOR)),
-        )
+            LA32R.ADDI  -> (alu2R1I12SInst ++ List(ALUOp -> ALUOpType.ADD)),
+            LA32R.SLTI  -> (alu2R1I12SInst ++ List(ALUOp -> ALUOpType.SLT)),
+            LA32R.SLTUI -> (alu2R1I12SInst ++ List(ALUOp -> ALUOpType.SLTU)),
+        ))
+
+        val alu2R1I12UInst = List[(Stageable[_ <: BaseType], Any)](
+            FUType -> FuType.ALU,
+            SRC1_FROM -> ALUOpSrc.REG,
+            SRC2_FROM -> ALUOpSrc.IMM,
+            IMMExtType -> ImmExtType.UI12,
+            REG_WRITE_VALID -> True
         )
 
-        val lsu2R1I12Inst = List[(Stageable[_ <: BaseType], Any)](
+        add(List(
+            LA32R.ANDI  -> (alu2R1I12UInst ++ List(ALUOp -> ALUOpType.AND)),
+            LA32R.ORI   -> (alu2R1I12UInst ++ List(ALUOp -> ALUOpType.OR)),
+            LA32R.XORI  -> (alu2R1I12UInst ++ List(ALUOp -> ALUOpType.XOR)),
+        ))
+
+        val lsu2R1I12InstLoad = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.LSU,
             SRC1_FROM -> ALUOpSrc.REG,
             SRC2_FROM -> ALUOpSrc.IMM,
             IMMExtType -> ImmExtType.SI12,
         )
 
-        // TODO: 暂不区分读写宽度和LDBU LDHU
         add(List(
-            LA32R.LDB -> (lsu2R1I12Inst ++ List(MEM_READ -> B"0001", MEM_READ_UE -> False, REG_WRITE_VALID -> True)),
-            LA32R.LDH -> (lsu2R1I12Inst ++ List(MEM_READ -> B"0011", MEM_READ_UE -> False, REG_WRITE_VALID -> True)),
-            LA32R.LDW -> (lsu2R1I12Inst ++ List(MEM_READ -> B"1111", MEM_READ_UE -> False, REG_WRITE_VALID -> True)),
-            LA32R.STB -> (lsu2R1I12Inst ++ List(MEM_WRITE -> B"0001")),
-            LA32R.STH -> (lsu2R1I12Inst ++ List(MEM_WRITE -> B"0011")),
-            LA32R.STW -> (lsu2R1I12Inst ++ List(MEM_WRITE -> B"1111")),
-            LA32R.LDBU -> (lsu2R1I12Inst ++ List(MEM_READ -> B"0001", MEM_READ_UE -> True, REG_WRITE_VALID -> True)),
-            LA32R.LDHU -> (lsu2R1I12Inst ++ List(MEM_READ -> B"0011", MEM_READ_UE -> True, REG_WRITE_VALID -> True)),
+            LA32R.LDB -> (lsu2R1I12InstLoad ++ List(MEM_READ -> B"0001", MEM_READ_UE -> False, REG_WRITE_VALID -> True)),
+            LA32R.LDH -> (lsu2R1I12InstLoad ++ List(MEM_READ -> B"0011", MEM_READ_UE -> False, REG_WRITE_VALID -> True)),
+            LA32R.LDW -> (lsu2R1I12InstLoad ++ List(MEM_READ -> B"1111", MEM_READ_UE -> False, REG_WRITE_VALID -> True)),
+            LA32R.LDBU -> (lsu2R1I12InstLoad ++ List(MEM_READ -> B"0001", MEM_READ_UE -> True, REG_WRITE_VALID -> True)),
+            LA32R.LDHU -> (lsu2R1I12InstLoad ++ List(MEM_READ -> B"0011", MEM_READ_UE -> True, REG_WRITE_VALID -> True)),
+        ))
+
+        val lsu2R1I12InstStore = List[(Stageable[_ <: BaseType], Any)](
+            FUType -> FuType.LSU,
+            SRC1_FROM -> ALUOpSrc.REG,
+            SRC2_FROM -> ALUOpSrc.REG,
+            IMMExtType -> ImmExtType.SI12,
+        )
+
+        add(List(
+            LA32R.STB -> (lsu2R1I12InstStore ++ List(MEM_WRITE -> B"0001")),
+            LA32R.STH -> (lsu2R1I12InstStore ++ List(MEM_WRITE -> B"0011")),
+            LA32R.STW -> (lsu2R1I12InstStore ++ List(MEM_WRITE -> B"1111")),
         ))
 
         val bru2R1I21Inst = List[(Stageable[_ <: BaseType], Any)](
@@ -154,7 +173,6 @@ class DecoderPlugin extends Plugin[Core]{
         val alu1R1I20Inst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
             SRC1_FROM -> ALUOpSrc.IMM,
-            SRC2_FROM -> ALUOpSrc.IMM,
             IMMExtType -> ImmExtType.SI20,
             ALUOp -> ALUOpType.LU12I,
             REG_WRITE_VALID -> True
