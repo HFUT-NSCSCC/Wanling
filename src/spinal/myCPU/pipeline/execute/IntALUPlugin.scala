@@ -71,6 +71,9 @@ class IntALUPlugin extends Plugin[Core]{
                 is(SRA){
                     result := (src1.asSInt |>> sa).asUInt
                 }
+                is(MUL){
+                    result := (src1.asSInt * src2.asSInt).asUInt(31 downto 0)
+                }
                 is(LU12I){
                     result := src1
                 }

@@ -30,7 +30,7 @@ class LSUPlugin extends Plugin[Core]{
 
             val memSignals = new MemSignals()
             memSignals.MEM_ADDR := vaddr.asBits & 0xFFFFFFFCL
-            memSignals.MEM_EN := (lsuSignals.MEM_READ =/= B"0000" || lsuSignals.MEM_WRITE =/= B"0000")
+            memSignals.MEM_EN := (lsuSignals.MEM_READ =/= B"0000" || lsuSignals.MEM_WRITE =/= B"0000") && arbitration.isValid
             memSignals.MEM_WE := lsuSignals.MEM_WRITE & (arbitration.isValidNotStuck.asSInt.resize(4 bits).asBits)
             memSignals.MEM_WDATA := lsuSignals.SRC2
             memSignals.MEM_MASK := Select(
@@ -39,9 +39,7 @@ class LSUPlugin extends Plugin[Core]{
                 (lsuSignals.MEM_READ === B"1111" || lsuSignals.MEM_WRITE === B"1111") -> B"1111",
                 default -> B"0000"
             )
-            when(arbitration.isValidNotStuck){
                 data_en := memSignals.MEM_EN
-            }
             insert(exeSignals.memSignals) := memSignals
         }
         
@@ -52,11 +50,7 @@ class LSUPlugin extends Plugin[Core]{
             data.addr := memSignals.MEM_ADDR
             IF1.arbitration.haltItself setWhen(data_en && !memSignals.MEM_ADDR(22) && arbitration.isValidNotStuck)
             // memory read
-            val rawData = Select(
-                (lsuSignals.MEM_READ =/= B"0000") -> data.rdata,
-                (lsuSignals.MEM_WRITE =/= B"0000") -> memSignals.MEM_WDATA,
-                default -> B(0, 32 bits)
-            )
+            val rawData = data.rdata
             val rdata_ext = Bits(32 bits)
             switch(memSignals.MEM_MASK){
                 is(B"0001"){

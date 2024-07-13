@@ -7,5 +7,6 @@ object ALUOpType extends SpinalEnum(binarySequential){
     val XOR, AND, OR, NOR = newElement()
     val SLT, SLTU = newElement()
     val SLL, SRL, SRA = newElement()
+    val MUL = newElement()
     val LU12I = newElement()
 }

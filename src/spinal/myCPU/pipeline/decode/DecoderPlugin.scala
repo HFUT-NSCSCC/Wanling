@@ -80,6 +80,7 @@ class DecoderPlugin extends Plugin[Core]{
             LA32R.SLL  -> (alu2RInst ++ List(ALUOp -> ALUOpType.SLL)),
             LA32R.SRL  -> (alu2RInst ++ List(ALUOp -> ALUOpType.SRL)),
             LA32R.SRA  -> (alu2RInst ++ List(ALUOp -> ALUOpType.SRA)),
+            LA32R.MUL  -> (alu2RInst ++ List(ALUOp -> ALUOpType.MUL)),
         )
         )
 
@@ -161,7 +162,10 @@ class DecoderPlugin extends Plugin[Core]{
         )
 
         add(List(
-            LA32R.JIRL -> (bru2R1I21Inst ++ List(JUMPType -> JumpType.JIRL)),
+            LA32R.JIRL -> (bru2R1I21Inst ++ List(JUMPType -> JumpType.JIRL, REG_WRITE_VALID -> True)),
+        ))
+
+        add(List(
             LA32R.BEQ  -> (bru2R1I21Inst ++ List(JUMPType -> JumpType.Branch, BRUOp -> BRUOpType.EQ)),
             LA32R.BNE  -> (bru2R1I21Inst ++ List(JUMPType -> JumpType.Branch, BRUOp -> BRUOpType.NEQ)),
             LA32R.BLT  -> (bru2R1I21Inst ++ List(JUMPType -> JumpType.Branch, BRUOp -> BRUOpType.LT)),
