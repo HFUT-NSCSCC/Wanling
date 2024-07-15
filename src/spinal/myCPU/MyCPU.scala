@@ -19,6 +19,7 @@ class DataBundle() extends Bundle{
     val addr = out(Bits(32 bits))
     val wdata = out(Bits(32 bits))
     val rdata = in(Bits(32 bits))
+    val do_store = in(Bool)
 }
 
 class DebugBundle() extends Bundle{

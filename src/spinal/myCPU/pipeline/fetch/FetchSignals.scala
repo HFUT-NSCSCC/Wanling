@@ -8,4 +8,5 @@ import myCPU.core.CoreConfig
 class FetchSignals(config: CoreConfig){
     object PC extends Stageable(Bits(PCWidth bits))
     object INST extends Stageable(Bits(InstWidth bits))
+    object PREJUMP extends Stageable(Bool())
 }

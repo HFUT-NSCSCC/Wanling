@@ -29,9 +29,9 @@ class LSUPlugin extends Plugin[Core]{
             val vaddr = src1 + imm
 
             val memSignals = new MemSignals()
-            memSignals.MEM_ADDR := vaddr.asBits & 0xFFFFFFFCL
+            memSignals.MEM_ADDR := vaddr.asBits & 0x7FFFFFFCL
             memSignals.MEM_EN := (lsuSignals.MEM_READ =/= B"0000" || lsuSignals.MEM_WRITE =/= B"0000") && arbitration.isValid
-            memSignals.MEM_WE := lsuSignals.MEM_WRITE & (arbitration.isValidNotStuck.asSInt.resize(4 bits).asBits)
+            memSignals.MEM_WE := lsuSignals.MEM_WRITE & (arbitration.isValid.asSInt.resize(4 bits).asBits)
             memSignals.MEM_WDATA := lsuSignals.SRC2
             memSignals.MEM_MASK := Select(
                 (lsuSignals.MEM_READ === B"0001" || lsuSignals.MEM_WRITE === B"0001") -> (B"0001" |<< vaddr(1 downto 0)),
@@ -39,7 +39,9 @@ class LSUPlugin extends Plugin[Core]{
                 (lsuSignals.MEM_READ === B"1111" || lsuSignals.MEM_WRITE === B"1111") -> B"1111",
                 default -> B"0000"
             )
+            when(arbitration.notStuck){
                 data_en := memSignals.MEM_EN
+            }
             insert(exeSignals.memSignals) := memSignals
         }
         
@@ -48,7 +50,9 @@ class LSUPlugin extends Plugin[Core]{
             val memSignals = input(exeSignals.memSignals)
             val lsuSignals = input(exeSignals.lsuSignals)
             data.addr := memSignals.MEM_ADDR
-            IF1.arbitration.haltItself setWhen(data_en && !memSignals.MEM_ADDR(22) && arbitration.isValidNotStuck)
+            IF1.arbitration.haltItself setWhen(data_en && !memSignals.MEM_ADDR(22) && arbitration.isValid)
+            // 连续的写入需要等待上一个数据写入完成
+            arbitration.haltItself setWhen(data.do_store && memSignals.MEM_WE =/= B"0000" && arbitration.isValid)
             // memory read
             val rawData = data.rdata
             val rdata_ext = Bits(32 bits)
