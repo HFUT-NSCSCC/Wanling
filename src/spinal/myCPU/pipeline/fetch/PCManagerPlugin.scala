@@ -10,8 +10,8 @@ import myCPU.constants.ImmExtType
 
 class PCManagerPlugin extends Plugin[Core]{
     val nextPC = UInt(32 bits)
-    val correctTarget = UInt(32 bits)
-    val correct = Bool
+    val redirectTarget = UInt(32 bits)
+    val redirect = Bool
 
     // val instBundle = new InstBundle()
     
@@ -29,7 +29,7 @@ class PCManagerPlugin extends Plugin[Core]{
         
         IF1 plug new Area{
             import IF1._
-            val PCval = RegNextWhen[UInt](nextPC, !arbitration.isStuck, init = PC_INIT) 
+            val PCval = RegNextWhen[UInt](nextPC, !arbitration.isStuck || redirect, init = PC_INIT) 
             arbitration.haltByOther setWhen(ClockDomain.current.isResetActive)
             // instBundle.en := !arbitration.isStuck
             // instBundle.addr := PCval.asBits
@@ -52,7 +52,7 @@ class PCManagerPlugin extends Plugin[Core]{
             // )
             // nextPC := jump ? jumpTarget | 
             //         preJump ? (PCval + imm) | PCval + 4
-            nextPC := Mux(correct, correctTarget,
+            nextPC := Mux(redirect, redirectTarget,
                             Mux(preJump, PCval + imm, PCval + 4))
             insert(fetchSignals.PREJUMP) := preJump
             insert(fetchSignals.PC) := PCval.asBits

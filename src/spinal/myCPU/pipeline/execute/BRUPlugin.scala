@@ -5,6 +5,7 @@ import myCPU.core.Core
 import spinal.core._
 import spinal.lib._
 import myCPU.pipeline.fetch.PCManagerPlugin
+import myCPU.pipeline.decode.ScoreBoardPlugin
 import _root_.myCPU.constants._
 
 class BRUPlugin extends Plugin[Core]{
@@ -16,8 +17,8 @@ class BRUPlugin extends Plugin[Core]{
         import pipeline._
         import pipeline.config._
 
-        ID plug new Area{
-            import ID._
+        ISS plug new Area{
+            import ISS._
             // val bruSignals = input(exeSignals.bruSignals)
 
             // val src1 = bruSignals.SRC1.asUInt //rj
@@ -69,19 +70,21 @@ class BRUPlugin extends Plugin[Core]{
             val jumpType = output(decodeSignals.JUMPType)
             insert(writeSignals.JUMPType) := jumpType
             val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(fetchSignals.PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
-            insert(decodeSignals.RESULT) := branchTarget.asBits
+            // insert(decodeSignals.RESULT) := branchTarget.asBits
 
             // TODO: 对预测的跳转结果进行修正
             val pcManager = service(classOf[PCManagerPlugin])
+            val scoreBoard = service(classOf[ScoreBoardPlugin])
             jump := (
                         (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
                     ) && arbitration.isValidNotStuck
-            // 当预测错误时，清空流水线
+            // 当预测错误时，清空流水线, 恢复记分牌
             val preJump = input(fetchSignals.PREJUMP)
-            val correct = (jump ^ preJump) && arbitration.isValidNotStuck
-            pcManager.correct := correct
-            pcManager.correctTarget := jump ? branchTarget | input(fetchSignals.PC).asUInt + 4
-            arbitration.flushNext setWhen(correct)
+            val redirect = (jump ^ preJump) && arbitration.isValidNotStuck
+            pcManager.redirect := redirect
+            pcManager.redirectTarget := jump ? branchTarget | input(fetchSignals.PC).asUInt + 4
+            // scoreBoard.redirect := redirect
+            arbitration.flushNext setWhen(redirect)
         }
     }
   

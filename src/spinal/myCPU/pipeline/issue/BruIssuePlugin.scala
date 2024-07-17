@@ -17,13 +17,14 @@ class BruIssuePlugin extends Plugin[Core]{
 
         ISS plug new Area{
             import ISS._
-            val bruALUSignals = new BRUSignals()
-            bruALUSignals.SRC1 := input(decodeSignals.SRC1)
-            bruALUSignals.SRC2 := input(decodeSignals.SRC2)
-            bruALUSignals.BRUOp := input(decodeSignals.BRUOp)
-            bruALUSignals.IMM := input(decodeSignals.IMM)
-            bruALUSignals.JUMPType := input(decodeSignals.JUMPType)
-            insert(exeSignals.bruSignals) := bruALUSignals
+            val bruSignals = new BRUSignals()
+            bruSignals.SRC1 := output(decodeSignals.SRC1)
+            bruSignals.SRC2 := output(decodeSignals.SRC2)
+            bruSignals.SRC2_FROM := input(decodeSignals.SRC2_FROM)
+            bruSignals.BRUOp := input(decodeSignals.BRUOp)
+            bruSignals.IMM := input(decodeSignals.IMM)
+            bruSignals.JUMPType := input(decodeSignals.JUMPType)
+            insert(exeSignals.bruSignals) := bruSignals
         }
     }
 }

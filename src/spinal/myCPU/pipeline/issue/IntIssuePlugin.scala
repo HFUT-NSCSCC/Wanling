@@ -19,14 +19,14 @@ class IntIssuePlugin extends Plugin[Core]{
             // 发射整数运算信号
             // 目前不做仲裁
             val intALUSignals = new IntALUSignals()
-            intALUSignals.SRC1 := input(decodeSignals.SRC1)
-            intALUSignals.SRC2 := input(decodeSignals.SRC2)
+            intALUSignals.SRC1 := output(decodeSignals.SRC1)
+            intALUSignals.SRC2 := output(decodeSignals.SRC2)
             intALUSignals.ALUOp := input(decodeSignals.ALUOp)
             intALUSignals.IMM := input(decodeSignals.IMM)
             intALUSignals.SRC1_FROM := input(decodeSignals.SRC1_FROM)
             intALUSignals.SRC2_FROM := input(decodeSignals.SRC2_FROM)
             insert(exeSignals.intALUSignals) := intALUSignals
-            insert(writeSignals.FUType) := input(decodeSignals.FUType)
+            insert(writeSignals.FUTypeWB) := input(decodeSignals.FUType)
         }
     }
   
