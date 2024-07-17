@@ -71,17 +71,14 @@ class BRUPlugin extends Plugin[Core]{
             val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(fetchSignals.PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
             insert(decodeSignals.RESULT) := branchTarget.asBits
 
-            // TODO: 对预测的跳转结果进行修正
             val pcManager = service(classOf[PCManagerPlugin])
             jump := (
                         (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
                     ) && arbitration.isValidNotStuck
-            // 当预测错误时，清空流水线
-            val preJump = input(fetchSignals.PREJUMP)
-            val correct = (jump ^ preJump) && arbitration.isValidNotStuck
-            pcManager.correct := correct
-            pcManager.correctTarget := jump ? branchTarget | input(fetchSignals.PC).asUInt + 4
-            arbitration.flushNext setWhen(correct)
+                            
+            pcManager.jump := jump
+            pcManager.jumpTarget := branchTarget
+            arbitration.flushNext setWhen(jump)
         }
     }
   
