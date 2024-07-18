@@ -50,7 +50,7 @@ class LSUPlugin extends Plugin[Core]{
             val memSignals = input(exeSignals.memSignals)
             val lsuSignals = input(exeSignals.lsuSignals)
             data.addr := memSignals.MEM_ADDR
-            IF1.arbitration.haltItself setWhen(data_en && !memSignals.MEM_ADDR(22) && arbitration.isValid)
+            IF1.arbitration.haltItself setWhen((data_en || data.do_store) && !memSignals.MEM_ADDR(22) && arbitration.isValid)
             // 连续的写入需要等待上一个数据写入完成
             arbitration.haltItself setWhen(data.do_store && memSignals.MEM_WE =/= B"0000" && arbitration.isValid)
             // memory read

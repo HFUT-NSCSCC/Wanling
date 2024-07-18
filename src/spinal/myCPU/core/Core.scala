@@ -94,7 +94,7 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
     val ISS  = newStage()
     val EXE1 = newStage()
     val EXE2 = newStage()
-    val EXE3 = newStage()
+    // val EXE3 = newStage()
     val WB   = newStage()
 
     val fetchSignals = new FetchSignals(config)
