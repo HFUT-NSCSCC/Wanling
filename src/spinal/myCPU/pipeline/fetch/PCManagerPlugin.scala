@@ -29,12 +29,15 @@ class PCManagerPlugin extends Plugin[Core]{
         
         IF1 plug new Area{
             import IF1._
-            val PCval = RegNextWhen[UInt](nextPC, !arbitration.isStuck, init = PC_INIT) 
+            val PCval = RegNext[UInt](nextPC, init = PC_INIT) 
             arbitration.haltByOther setWhen(ClockDomain.current.isResetActive)
             // instBundle.en := !arbitration.isStuck
             // instBundle.addr := PCval.asBits
             
-            nextPC := jump ? jumpTarget | PCval + 4
+            // nextPC := jump ? jumpTarget | PCval + 4
+            nextPC := Mux(jump, jumpTarget,
+                    Mux(arbitration.isStuck, PCval,
+                     PCval + 4))
             insert(fetchSignals.PC) := PCval.asBits
         }
 

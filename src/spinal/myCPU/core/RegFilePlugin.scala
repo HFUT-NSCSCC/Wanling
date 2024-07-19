@@ -35,22 +35,22 @@ class RegFilePlugin extends Plugin[Core]{
             regFile.init(List.fill(NR_REG)(B(0, 32 bits)))
         }
 
-        ID plug new Area{
-            import ID._
+        ISS plug new Area{
+            import ISS._
 
             val inst = input(fetchSignals.INST)
-            val fuType = output(decodeSignals.FUType)
+            val fuType = input(decodeSignals.FUType)
             val src1Addr = U(inst(LA32R.rjRange))
             val src2Addr = (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
 
-            val src1Data = (wvalid && src1Addr.asBits === waddr && (output(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src1Addr)
-            val src2Data = (wvalid && src2Addr.asBits === waddr && (output(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src2Addr)
+            val src1Data = (wvalid && src1Addr.asBits === waddr && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src1Addr)
+            val src2Data = (wvalid && src2Addr.asBits === waddr && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src2Addr)
             
             insert(decodeSignals.SRC1Addr) := src1Addr.asBits
             insert(decodeSignals.SRC2Addr) := src2Addr.asBits
             insert(decodeSignals.SRC1) := (src1Addr === 0) ? B(0, 32 bits) | src1Data
             insert(decodeSignals.SRC2) := (src2Addr === 0) ? B(0, 32 bits) | src2Data
-            insert(decodeSignals.REG_WRITE_ADDR) := (output(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange) | B"5'h1"
+            insert(decodeSignals.REG_WRITE_ADDR) := (input(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange) | B"5'h1"
             
         }
 
@@ -71,7 +71,7 @@ class RegFilePlugin extends Plugin[Core]{
             //     default -> B"32'h00000000"
             // }
 
-            switch(input(writeSignals.FUType)){
+            switch(input(writeSignals.FUTypeWB)){
                 is(ALU){
                     wdata := input(writeSignals.ALU_RESULT)
                 }

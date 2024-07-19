@@ -8,7 +8,7 @@ import myCPU.constants.JumpType
 import myCPU.constants.FuType
 
 final case class WritebackSignals(config: CoreConfig){
-    object FUType extends Stageable(FuType())
+    object FUTypeWB extends Stageable(FuType())
     object ALU_RESULT extends Stageable(Bits(DataWidth bits))
     object JUMPType extends Stageable(JumpType())
     object MEM_RDATA extends Stageable(Bits(DataWidth bits))
