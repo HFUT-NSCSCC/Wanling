@@ -33,12 +33,8 @@ class LSUPlugin extends Plugin[Core]{
             memSignals.MEM_EN := (lsuSignals.MEM_READ =/= B"0000" || lsuSignals.MEM_WRITE =/= B"0000") && arbitration.isValid
             memSignals.MEM_WE := lsuSignals.MEM_WRITE & (arbitration.isValid.asSInt.resize(4 bits).asBits)
             memSignals.MEM_WDATA := lsuSignals.SRC2
-            memSignals.MEM_MASK := Select(
-                (lsuSignals.MEM_READ === B"0001" || lsuSignals.MEM_WRITE === B"0001") -> (B"0001" |<< vaddr(1 downto 0)),
-                (lsuSignals.MEM_READ === B"0011" || lsuSignals.MEM_WRITE === B"0011") -> (B"0011" |<< vaddr(1 downto 0)),
-                (lsuSignals.MEM_READ === B"1111" || lsuSignals.MEM_WRITE === B"1111") -> B"1111",
-                default -> B"0000"
-            )
+            memSignals.MEM_MASK := (lsuSignals.MEM_READ | lsuSignals.MEM_WRITE) |<< vaddr(1 downto 0)
+
             when(arbitration.notStuck){
                 data_en := memSignals.MEM_EN
             }

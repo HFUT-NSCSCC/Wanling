@@ -18,20 +18,33 @@ class BRUPlugin extends Plugin[Core]{
 
         ISS plug new Area{
             import ISS._
-            // val bruSignals = input(exeSignals.bruSignals)
-
-            // val src1 = bruSignals.SRC1.asUInt //rj
-            // val src2 = bruSignals.SRC2.asUInt //rd
-            // val bruOp = bruSignals.BRUOp
-
             val src1 = input(decodeSignals.SRC1).asUInt
             val src2_from = input(decodeSignals.SRC2_FROM)
-            val src2 = Select(
-                (src2_from === ALUOpSrc.REG) -> U(output(decodeSignals.SRC2)),
-                (src2_from === ALUOpSrc.IMM) -> U(input(decodeSignals.IMM)),
-                (src2_from === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
-                default -> U(0, 32 bits)
-            )
+            // -----有优先级-----
+            // val src2 = Select(
+            //     (src2_from === ALUOpSrc.REG) -> U(output(decodeSignals.SRC2)),
+            //     (src2_from === ALUOpSrc.IMM) -> U(input(decodeSignals.IMM)),
+            //     (src2_from === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
+            //     default -> U(0, 32 bits)
+            // )
+
+
+            // -----无优先级-----
+            val src2 = UInt(32 bits)
+            switch(src2_from){
+                is(ALUOpSrc.REG){
+                    src2 := U(output(decodeSignals.SRC2))
+                }
+                is(ALUOpSrc.IMM){
+                    src2 := U(input(decodeSignals.IMM))
+                }
+                is(ALUOpSrc.PC){
+                    src2 := U(input(fetchSignals.PC))
+                }
+                default{
+                    src2 := U(0, 32 bits)
+                }
+            }
             val bruOp = input(decodeSignals.BRUOp)
 
 

@@ -22,6 +22,10 @@ class RegFilePlugin extends Plugin[Core]{
     val wvalid = Bool
     val waddr = Bits(RegAddrWidth bits).addAttribute("DONT_TOUCH")
     val wdata = Bits(DataWidth bits).addAttribute("DONT_TOUCH")
+
+    // val fromEXE1 = Bits(DataWidth bits)
+    // val fromEXE2 = Bits(DataWidth bits)
+    // val fromWB = Bits(DataWidth bits)
     override def setup(pipeline: Core): Unit = {
 
     }
@@ -33,6 +37,17 @@ class RegFilePlugin extends Plugin[Core]{
         val global = pipeline plug new Area{
             val regFile = Mem(Bits(32 bits), NR_REG).addAttribute(Verilator.public).addAttribute("DONT_TOUCH")
             regFile.init(List.fill(NR_REG)(B(0, 32 bits)))
+
+            // fromEXE1 := Select(
+            //     (EXE1.output(writeSignals.FUTypeWB) === FuType.ALU) -> EXE1.output(writeSignals.ALU_RESULT),
+            //     (EXE1.output(writeSignals.FUTypeWB) === FuType.BRU) -> (EXE1.output(fetchSignals.PC).asUInt + 4).asBits,
+            // )
+            // fromEXE2 := Select(
+            //     (EXE2.output(writeSignals.FUTypeWB) === FuType.ALU) -> EXE2.output(writeSignals.ALU_RESULT),
+            //     (EXE2.output(writeSignals.FUTypeWB) === FuType.BRU) -> (EXE2.output(fetchSignals.PC).asUInt + 4).asBits,
+            //     (EXE2.output(writeSignals.FUTypeWB) === FuType.LSU) -> EXE2.output(writeSignals.MEM_RDATA),
+            // )
+            // fromWB := wdata
         }
 
         ISS plug new Area{
