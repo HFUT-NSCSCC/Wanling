@@ -65,7 +65,10 @@ class RegFilePlugin extends Plugin[Core]{
                 is(FuType.BRU) {
                     fromEXE2 := (EXE2.output(fetchSignals.PC).asUInt + U(4)).asBits
                 }
-                default {
+                // is(FuType.LSU) {
+                //     fromEXE2 := EXE2.output(writeSignals.MEM_RDATA_WB)
+                // }
+                default{
                     fromEXE2 := 0
                 }
             }

@@ -9,9 +9,13 @@ import myCPU.DataBundle
 class LSUPlugin extends Plugin[Core]{
     val data = new DataBundle()
     // 设置数据端口的使能为寄存器，使其在默认状态下为False，避免译码信号未到达时候信号为未知，导致无法正常取指
-    val data_en = RegInit(False)
+    // val data_en = RegInit(False)
+    val data_reg = Reg(new DataBundle())
     override def setup(pipeline: Core): Unit = {
-        data.en := data_en
+        data.en := data_reg.en
+        data.addr := data_reg.addr
+        data.wdata := data_reg.wdata
+        data.we := data_reg.we
 
     }
 
@@ -36,18 +40,24 @@ class LSUPlugin extends Plugin[Core]{
             memSignals.MEM_MASK := (lsuSignals.MEM_READ | lsuSignals.MEM_WRITE) |<< vaddr(1 downto 0)
 
             when(arbitration.notStuck){
-                data_en := memSignals.MEM_EN
+                data_reg.en := memSignals.MEM_EN
+                data_reg.addr := memSignals.MEM_ADDR
+                data_reg.wdata := memSignals.MEM_WDATA
+                data_reg.we := memSignals.MEM_WE
             }
             insert(exeSignals.memSignals) := memSignals
+            // data.addr := memSignals.MEM_ADDR
+            // // memory write
+            // data.we := memSignals.MEM_WE
+            // data.wdata := memSignals.MEM_WDATA
         }
         
         EXE2 plug new Area{
             import EXE2._
             val memSignals = input(exeSignals.memSignals)
             val lsuSignals = input(exeSignals.lsuSignals)
-            data.addr := memSignals.MEM_ADDR
             // 暂停前端指令供应
-            ISS.arbitration.haltItself setWhen((data_en && !memSignals.MEM_ADDR(22) && arbitration.isValid) || (data.do_store_base))
+            ISS.arbitration.haltItself setWhen((data_reg.en && !memSignals.MEM_ADDR(22) && arbitration.isValid) || (data.do_store_base))
             // 连续的写入需要等待上一个数据写入完成
             arbitration.haltItself setWhen(
                 ((data.do_store_base || data.do_store_ext) && memSignals.MEM_MASK =/= B"0000" && arbitration.isValid))
@@ -91,9 +101,6 @@ class LSUPlugin extends Plugin[Core]{
             }
             insert(writeSignals.MEM_RDATA_WB) := rdata_ext
             
-            // memory write
-            data.we := memSignals.MEM_WE
-            data.wdata := memSignals.MEM_WDATA
             
             
         }
