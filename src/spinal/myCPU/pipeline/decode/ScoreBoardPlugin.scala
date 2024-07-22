@@ -20,7 +20,7 @@ class ScoreBoardPlugin extends Plugin[Core]{
         import pipeline._
         import pipeline.config._
 
-        ISS plug new Area{
+        val setScoreboard = ISS plug new Area{
             import ISS._
 
 
@@ -46,7 +46,7 @@ class ScoreBoardPlugin extends Plugin[Core]{
             import EXE2._
             val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR).asUInt
             val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddr =/= 0 && arbitration.isValidNotStuck
-            when(clrValid){
+            when(clrValid && !setScoreboard.setValid) {
                 scoreBoard(regWriteAddr) := False
             }
         }

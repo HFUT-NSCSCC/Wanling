@@ -80,9 +80,8 @@ class BRUPlugin extends Plugin[Core]{
             // val jumpType = bruSignals.JUMPType
             val imm = input(decodeSignals.IMM)
             val jumpType = input(decodeSignals.JUMPType)
-            insert(writeSignals.JUMPType_WB) := jumpType
-            val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(fetchSignals.PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
-            insert(decodeSignals.RESULT) := branchTarget.asBits
+            val opA = Mux(jumpType =/= JumpType.JIRL, input(fetchSignals.PC).asUInt, src1)
+            val branchTarget = opA + imm.asUInt
 
             val pcManager = service(classOf[PCManagerPlugin])
             jump := (
@@ -90,10 +89,10 @@ class BRUPlugin extends Plugin[Core]{
                     ) && arbitration.isValidNotStuck
 
             val preJump = input(fetchSignals.PREJUMP)
-            val correct = (jump ^ preJump) && arbitration.isValidNotStuck
-            pcManager.correct := correct
-            pcManager.correctTarget := Mux(jump, branchTarget, input(fetchSignals.PC).asUInt + U(4))
-            arbitration.flushNext setWhen(correct)
+            val redirect = (jump ^ preJump) && arbitration.isValidNotStuck
+            pcManager.redirect := redirect
+            pcManager.redirectTarget := Mux(jump, branchTarget, input(fetchSignals.PC).asUInt + U(4))
+            arbitration.flushNext setWhen(redirect)
                             
             // pcManager.jump := jump
             // pcManager.jumpTarget := branchTarget

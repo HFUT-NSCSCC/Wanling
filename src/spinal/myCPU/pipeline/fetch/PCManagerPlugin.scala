@@ -13,8 +13,8 @@ class PCManagerPlugin extends Plugin[Core]{
     // val jumpTarget = UInt(32 bits)
     // val jump = Bool
 
-    val correct = Bool
-    val correctTarget = UInt(32 bits)
+    val redirect = Bool
+    val redirectTarget = UInt(32 bits)
 
     // val instBundle = new InstBundle()
     
@@ -52,7 +52,7 @@ class PCManagerPlugin extends Plugin[Core]{
             val imm = immExtForBranch.io.imm.asUInt
 
             val preJump = isBranch && imm(31)
-            nextPC := Mux(correct, correctTarget,
+            nextPC := Mux(redirect, redirectTarget,
                       Mux(preJump, PCval + imm,
                       PCval + 4))
             
