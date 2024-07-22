@@ -37,37 +37,9 @@ class IntALUPlugin extends Plugin[Core]{
             // )
 
             // ----- 无优先级 -----
-            val src1 = UInt(32 bits)
-            val src2 = UInt(32 bits)
-            switch(aluSignals.SRC1_FROM) {
-                is(ALUOpSrc.REG) {
-                    src1 := U(aluSignals.SRC1)
-                }
-                is(ALUOpSrc.IMM) {
-                    src1 := U(aluSignals.IMM)
-                }
-                is(ALUOpSrc.PC) {
-                    src1 := U(input(fetchSignals.PC))
-                }
-                default {
-                    src1 := U(0, 32 bits)
-                }
-            }
+            val src1 = U(aluSignals.SRC1)
+            val src2 = U(aluSignals.SRC2)
 
-            switch(aluSignals.SRC2_FROM) {
-                is(ALUOpSrc.REG) {
-                    src2 := U(aluSignals.SRC2)
-                }
-                is(ALUOpSrc.IMM) {
-                    src2 := U(aluSignals.IMM)
-                }
-                is(ALUOpSrc.PC) {
-                    src2 := U(input(fetchSignals.PC))
-                }
-                default {
-                    src2 := U(0, 32 bits)
-                }
-            }
             val sa = src2(4 downto 0)
             val result = UInt(32 bits)
             switch(IntALUOp){

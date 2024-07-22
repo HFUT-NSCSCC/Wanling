@@ -22,9 +22,6 @@ final case class IntALUSignals() extends Bundle{
     val SRC1 = Bits(DataWidth bits)
     val SRC2 = Bits(DataWidth bits)
     val ALUOp = ALUOpType()
-    val IMM = Bits(DataWidth bits)
-    val SRC1_FROM = ALUOpSrc()
-    val SRC2_FROM = ALUOpSrc()
     // val RESULT = Bits(DataWidth bits)
 
     // object SRC1Addr extends Stageable(Bits(RegAddrWidth bits))
