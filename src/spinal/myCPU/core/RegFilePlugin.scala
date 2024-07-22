@@ -101,9 +101,9 @@ class RegFilePlugin extends Plugin[Core]{
             import ISS._
 
             val inst = input(fetchSignals.INST)
-            val fuType = output(decodeSignals.FUType)
-            val src1Addr = U(inst(LA32R.rjRange))
-            val src2Addr = (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
+            val fuType = input(decodeSignals.FUType)
+            src1Addr := U(inst(LA32R.rjRange))
+            src2Addr := (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
 
             // val src1Data = (wvalid && src1Addr.asBits === waddr && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src1Addr)
             // val src2Data = (wvalid && src2Addr.asBits === waddr && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src2Addr)
@@ -164,7 +164,7 @@ class RegFilePlugin extends Plugin[Core]{
             //     default -> B"32'h00000000"
             // }
 
-            switch(input(writeSignals.FUType)){
+            switch(input(writeSignals.FUType_WB)){
                 is(ALU){
                     wdata := input(writeSignals.ALU_RESULT_WB)
                 }
