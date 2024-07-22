@@ -65,8 +65,8 @@ class RegFilePlugin extends Plugin[Core]{
                 is(FuType.BRU) {
                     fromEXE2 := (EXE2.output(fetchSignals.PC).asUInt + U(4)).asBits
                 }
-                is(FuType.LSU) {
-                    fromEXE2 := EXE2.output(writeSignals.MEM_RDATA_WB)
+                default {
+                    fromEXE2 := 0
                 }
             }
             fromWB := wdata
@@ -78,6 +78,7 @@ class RegFilePlugin extends Plugin[Core]{
             rs1BypassNetwork.io.rdEXE2 <> EXE2.output(writeSignals.REG_WRITE_ADDR_WB)
             rs1BypassNetwork.io.rdWB   <> waddr
             rs1BypassNetwork.io.fuTypeEXE1 <> EXE1.output(writeSignals.FUType_WB)
+            rs1BypassNetwork.io.fuTypeEXE2 <> EXE2.output(writeSignals.FUType_WB)
             rs1BypassNetwork.io.regWriteValidEXE1 := EXE1.output(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
             rs1BypassNetwork.io.regWriteValidEXE2 := EXE2.output(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
             rs1BypassNetwork.io.regWriteValidWB   <> wvalid
@@ -89,6 +90,7 @@ class RegFilePlugin extends Plugin[Core]{
             rs2BypassNetwork.io.rdEXE2 <> EXE2.output(writeSignals.REG_WRITE_ADDR_WB)
             rs2BypassNetwork.io.rdWB   <> waddr
             rs2BypassNetwork.io.fuTypeEXE1 <> EXE1.output(writeSignals.FUType_WB)
+            rs2BypassNetwork.io.fuTypeEXE2 <> EXE2.output(writeSignals.FUType_WB)
             rs2BypassNetwork.io.regWriteValidEXE1 := EXE1.output(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
             rs2BypassNetwork.io.regWriteValidEXE2 := EXE2.output(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
             rs2BypassNetwork.io.regWriteValidWB   <> wvalid

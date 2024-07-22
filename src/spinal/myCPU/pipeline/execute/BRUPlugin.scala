@@ -88,10 +88,16 @@ class BRUPlugin extends Plugin[Core]{
             jump := (
                         (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
                     ) && arbitration.isValidNotStuck
+
+            val preJump = input(fetchSignals.PREJUMP)
+            val correct = (jump ^ preJump) && arbitration.isValidNotStuck
+            pcManager.correct := correct
+            pcManager.correctTarget := Mux(jump, branchTarget, input(fetchSignals.PC).asUInt + U(4))
+            arbitration.flushNext setWhen(correct)
                             
-            pcManager.jump := jump
-            pcManager.jumpTarget := branchTarget
-            arbitration.flushNext setWhen(jump)
+            // pcManager.jump := jump
+            // pcManager.jumpTarget := branchTarget
+            // arbitration.flushNext setWhen(jump)
         }
     }
   
