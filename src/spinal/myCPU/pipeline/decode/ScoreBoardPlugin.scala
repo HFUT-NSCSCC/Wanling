@@ -7,6 +7,7 @@ import _root_.myCPU.constants.BRUOpType
 import myCPU.constants.JumpType
 import myCPU.constants.FuType
 import myCPU.constants.ALUOpSrc
+import _root_.myCPU.core.RegFilePlugin
 
 class ScoreBoardPlugin extends Plugin[Core]{
     // 一个32位的记分牌, 记录每个寄存器的状态
@@ -31,13 +32,14 @@ class ScoreBoardPlugin extends Plugin[Core]{
                 scoreBoard(regWriteAddr) := True
             }
 
+            val regfile = service(classOf[RegFilePlugin])
 
             arbitration.haltItself setWhen(
                 ((scoreBoard(output(decodeSignals.SRC1Addr).asUInt) 
-                        && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) 
+                        && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG) && !regfile.rs1Forwardable) 
                 || 
                 (scoreBoard(output(decodeSignals.SRC2Addr).asUInt) 
-                        && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ))
+                        && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG) && !regfile.rs2Forwardable) ))
         }
 
         EXE2 plug new Area{

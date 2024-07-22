@@ -108,7 +108,7 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
         new FetcherPlugin,
         new DecoderPlugin,
         new ScoreBoardPlugin,
-        // new IssuePlugin,
+        new IssuePlugin,
         new IntIssuePlugin,
         // new BruIssuePlugin,
         new LsuIssuePlugin,

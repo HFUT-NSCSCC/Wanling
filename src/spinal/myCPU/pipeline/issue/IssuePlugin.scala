@@ -16,10 +16,10 @@ class IssuePlugin extends Plugin[Core]{
         ISS plug new Area{
             import ISS._
 
-            insert(writeSignals.REG_WRITE_VALID) := input(decodeSignals.REG_WRITE_VALID) && !arbitration.isFlushed
-            insert(writeSignals.FUTypeWB) := input(decodeSignals.FUType)
-            insert(writeSignals.REG_WRITE_ADDR) := input(decodeSignals.REG_WRITE_ADDR)
-            insert(writeSignals.PC) := input(fetchSignals.PC)
+            insert(writeSignals.REG_WRITE_VALID_WB) := input(decodeSignals.REG_WRITE_VALID)
+            insert(writeSignals.FUType_WB) := input(decodeSignals.FUType)
+            insert(writeSignals.REG_WRITE_ADDR_WB) := input(decodeSignals.REG_WRITE_ADDR)
+            insert(writeSignals.PC_WB) := input(fetchSignals.PC)
         }
 
         // ID plug new Area{

@@ -26,7 +26,8 @@ class IntIssuePlugin extends Plugin[Core]{
             intALUSignals.SRC1_FROM := input(decodeSignals.SRC1_FROM)
             intALUSignals.SRC2_FROM := input(decodeSignals.SRC2_FROM)
             insert(exeSignals.intALUSignals) := intALUSignals
-            insert(writeSignals.FUTypeWB) := input(decodeSignals.FUType)
+            // insert(writeSignals.FUTypeWB) := input(decodeSignals.FUType)
+            // insert(writeSignals.REG_WRITE_VALID) := input(decodeSignals.REG_WRITE_VALID)
         }
     }
   

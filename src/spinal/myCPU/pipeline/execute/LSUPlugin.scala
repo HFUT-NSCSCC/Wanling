@@ -50,7 +50,7 @@ class LSUPlugin extends Plugin[Core]{
             ISS.arbitration.haltItself setWhen((data_en && !memSignals.MEM_ADDR(22) && arbitration.isValid) || (data.do_store_base))
             // 连续的写入需要等待上一个数据写入完成
             arbitration.haltItself setWhen(
-                ((data.do_store_base || data.do_store_ext) && memSignals.MEM_WE =/= B"0000" && arbitration.isValid))
+                ((data.do_store_base || data.do_store_ext) && memSignals.MEM_MASK =/= B"0000" && arbitration.isValid))
             // memory read
             val rawData = data.rdata
             val rdata_ext = Bits(32 bits)
@@ -89,7 +89,7 @@ class LSUPlugin extends Plugin[Core]{
                     rdata_ext := rawData
                 }
             }
-            insert(writeSignals.MEM_RDATA) := rdata_ext
+            insert(writeSignals.MEM_RDATA_WB) := rdata_ext
             
             // memory write
             data.we := memSignals.MEM_WE
