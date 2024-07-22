@@ -10,8 +10,8 @@ import myCPU.constants.ImmExtType
 
 class PCManagerPlugin extends Plugin[Core]{
     val nextPC = UInt(32 bits)
-    val redirectTarget = UInt(32 bits)
-    val redirect = Bool
+    val jumpTarget = UInt(32 bits)
+    val jump = Bool
 
     // val instBundle = new InstBundle()
     
@@ -29,32 +29,15 @@ class PCManagerPlugin extends Plugin[Core]{
         
         IF1 plug new Area{
             import IF1._
-            val PCval = RegNextWhen[UInt](nextPC, !arbitration.isStuck || redirect, init = PC_INIT) 
+            val PCval = RegNext[UInt](nextPC, init = PC_INIT) 
             arbitration.haltByOther setWhen(ClockDomain.current.isResetActive)
             // instBundle.en := !arbitration.isStuck
             // instBundle.addr := PCval.asBits
-            val inst = output(fetchSignals.INST)
-            val isBranch = inst(31 downto 30) === B"01" && inst(29 downto 26) =/= B"0011"
-            val IMMType = (inst(29 downto 26) === B"0100" || inst(29 downto 26) === B"0101") ? ImmExtType.SI26 | ImmExtType.SI16
-            val immExtForBranch = ImmExtForBranch()
-            immExtForBranch.io.inst := inst
-            immExtForBranch.io.immType := IMMType
-            val imm = immExtForBranch.io.imm.asUInt
-            // 若为负数, 则预测为跳转
-            val preJump = isBranch && imm(31)
-            // TODO
-            // nextPC := jump ? jumpTarget | 
-            //             (imm(31)) ? (PCval + imm) | PCval + 4
-            // nextPC := Select(
-            //     (jump) -> jumpTarget,
-            //     (preJump) -> (PCval + imm),
-            //     default -> (PCval + 4)
-            // )
-            // nextPC := jump ? jumpTarget | 
-            //         preJump ? (PCval + imm) | PCval + 4
-            nextPC := Mux(redirect, redirectTarget,
-                            Mux(preJump, PCval + imm, PCval + 4))
-            insert(fetchSignals.PREJUMP) := preJump
+            
+            // nextPC := jump ? jumpTarget | PCval + 4
+            nextPC := Mux(jump, jumpTarget,
+                    Mux(arbitration.isStuck, PCval,
+                     PCval + 4))
             insert(fetchSignals.PC) := PCval.asBits
         }
 
