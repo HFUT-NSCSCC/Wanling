@@ -4,6 +4,7 @@ import myCPU.builder.Plugin
 import myCPU.core.Core
 import spinal.core._
 import myCPU.pipeline.execute.IntALUSignals
+import myCPU.constants.ALUOpSrc
 
 class IntIssuePlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
@@ -19,12 +20,40 @@ class IntIssuePlugin extends Plugin[Core]{
             // 发射整数运算信号
             // 目前不做仲裁
             val intALUSignals = new IntALUSignals()
-            intALUSignals.SRC1 := output(decodeSignals.SRC1)
-            intALUSignals.SRC2 := output(decodeSignals.SRC2)
+            val src1 = Bits(32 bits)
+            val src2 = Bits(32 bits)
+            switch(input(decodeSignals.SRC1_FROM)) {
+                is(ALUOpSrc.REG) {
+                    src1 := (output(decodeSignals.SRC1))
+                }
+                is(ALUOpSrc.IMM) {
+                    src1 := (input(decodeSignals.IMM))
+                }
+                is(ALUOpSrc.PC) {
+                    src1 := (input(fetchSignals.PC))
+                }
+                default {
+                    src1 := B(0, 32 bits)
+                }
+            }
+
+            switch(input(decodeSignals.SRC2_FROM)) {
+                is(ALUOpSrc.REG) {
+                    src2 := (output(decodeSignals.SRC2))
+                }
+                is(ALUOpSrc.IMM) {
+                    src2 := (input(decodeSignals.IMM))
+                }
+                is(ALUOpSrc.PC) {
+                    src2 := (input(fetchSignals.PC))
+                }
+                default {
+                    src2 := B(0, 32 bits)
+                }
+            }
+            intALUSignals.SRC1 := src1
+            intALUSignals.SRC2 := src2
             intALUSignals.ALUOp := input(decodeSignals.ALUOp)
-            intALUSignals.IMM := input(decodeSignals.IMM)
-            intALUSignals.SRC1_FROM := input(decodeSignals.SRC1_FROM)
-            intALUSignals.SRC2_FROM := input(decodeSignals.SRC2_FROM)
             insert(exeSignals.intALUSignals) := intALUSignals
             // insert(writeSignals.FUTypeWB) := input(decodeSignals.FUType)
             // insert(writeSignals.REG_WRITE_VALID) := input(decodeSignals.REG_WRITE_VALID)
