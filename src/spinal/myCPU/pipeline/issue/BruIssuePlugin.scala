@@ -18,8 +18,6 @@ class BruIssuePlugin extends Plugin[Core]{
         ISS plug new Area{
             import ISS._
             val bruALUSignals = new BRUSignals()
-            bruALUSignals.SRC1 := input(decodeSignals.SRC1)
-            bruALUSignals.SRC2 := input(decodeSignals.SRC2)
             bruALUSignals.BRUOp := input(decodeSignals.BRUOp)
             bruALUSignals.IMM := input(decodeSignals.IMM)
             bruALUSignals.JUMPType := input(decodeSignals.JUMPType)

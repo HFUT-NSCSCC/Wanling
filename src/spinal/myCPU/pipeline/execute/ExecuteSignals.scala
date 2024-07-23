@@ -35,8 +35,6 @@ final case class IntALUSignals() extends Bundle{
 }
 
 final case class BRUSignals() extends Bundle {
-    val SRC1 = Bits(DataWidth bits)
-    val SRC2 = Bits(DataWidth bits)
     val BRUOp = BRUOpType()
     val IMM = Bits(DataWidth bits)
     val JUMPType = JumpType()

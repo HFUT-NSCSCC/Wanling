@@ -80,9 +80,7 @@ class BRUPlugin extends Plugin[Core]{
             // val jumpType = bruSignals.JUMPType
             val imm = input(decodeSignals.IMM)
             val jumpType = input(decodeSignals.JUMPType)
-            insert(writeSignals.JUMPType_WB) := jumpType
             val branchTarget = (jumpType =/= JumpType.JIRL) ? (input(fetchSignals.PC).asUInt + imm.asUInt) | (src1 + imm.asUInt)
-            insert(decodeSignals.RESULT) := branchTarget.asBits
 
             val pcManager = service(classOf[PCManagerPlugin])
             jump := (
