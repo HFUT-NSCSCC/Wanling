@@ -8,6 +8,7 @@ import myCPU.constants.JumpType
 import myCPU.constants.FuType
 import myCPU.constants.OpSrc
 import _root_.myCPU.core.RegFilePlugin
+import _root_.myCPU.pipeline.decode
 
 class ScoreBoardPlugin extends Plugin[Core]{
     // 一个32位的记分牌, 记录每个寄存器的状态
@@ -44,10 +45,16 @@ class ScoreBoardPlugin extends Plugin[Core]{
 
         EXE2 plug new Area{
             import EXE2._
-            val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR).asUInt
-            val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddr =/= 0 && arbitration.isValidNotStuck
-            when(clrValid && !setScoreboard.setValid){
-                scoreBoard(regWriteAddr) := False
+            val regWriteAddrEXE2 = input(decodeSignals.REG_WRITE_ADDR).asUInt
+            val regWriteAddrEXE1 = EXE1.input(decodeSignals.REG_WRITE_ADDR).asUInt
+            val regWriteValidEXE2 = input(decodeSignals.REG_WRITE_VALID)
+            val regWriteValidEXE1 = EXE1.input(decodeSignals.REG_WRITE_VALID)
+            // exe2 与 exe1 写入的目标不一致, 才可以清除
+            val clrValid = (regWriteValidEXE2 && regWriteAddrEXE2 =/= 0 && arbitration.isValidNotStuck) &&
+                            ((regWriteValidEXE1 ^ regWriteValidEXE2) || (regWriteAddrEXE1 =/= regWriteAddrEXE2))
+            // val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddrEXE2 =/= 0 && arbitration.isValidNotStuck
+            when(clrValid && !(setScoreboard.setValid && setScoreboard.regWriteAddr === regWriteAddrEXE2)){
+                scoreBoard(regWriteAddrEXE2) := False
             }
         }
     }
