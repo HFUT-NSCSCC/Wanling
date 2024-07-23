@@ -68,6 +68,9 @@ class RegFilePlugin extends Plugin[Core]{
                 // is(FuType.LSU) {
                 //     fromEXE2 := EXE2.output(writeSignals.MEM_RDATA_WB)
                 // }
+                is(FuType.MUL) {
+                    fromEXE2 := EXE2.output(writeSignals.MUL_RESULT_WB)
+                }
                 default{
                     fromEXE2 := 0
                 }
@@ -77,25 +80,27 @@ class RegFilePlugin extends Plugin[Core]{
             val rs1BypassNetwork = new BypassNetwork()
             val rs2BypassNetwork = new BypassNetwork()
             rs1BypassNetwork.io.rsISS <> src1Addr.asBits
-            rs1BypassNetwork.io.rdEXE1 <> EXE1.output(writeSignals.REG_WRITE_ADDR_WB)
-            rs1BypassNetwork.io.rdEXE2 <> EXE2.output(writeSignals.REG_WRITE_ADDR_WB)
+            rs1BypassNetwork.io.rdEXE1 <> EXE1.input(writeSignals.REG_WRITE_ADDR_WB)
+            rs1BypassNetwork.io.rdEXE2 <> EXE2.input(writeSignals.REG_WRITE_ADDR_WB)
             rs1BypassNetwork.io.rdWB   <> waddr
-            rs1BypassNetwork.io.fuTypeEXE1 <> EXE1.output(writeSignals.FUType_WB)
-            rs1BypassNetwork.io.fuTypeEXE2 <> EXE2.output(writeSignals.FUType_WB)
-            rs1BypassNetwork.io.regWriteValidEXE1 := EXE1.output(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
-            rs1BypassNetwork.io.regWriteValidEXE2 := EXE2.output(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
+            rs1BypassNetwork.io.fuTypeEXE1 <> EXE1.input(writeSignals.FUType_WB)
+            rs1BypassNetwork.io.fuTypeEXE2 <> EXE2.input(writeSignals.FUType_WB)
+            rs1BypassNetwork.io.fuTypeWB <> WB.input(writeSignals.FUType_WB)
+            rs1BypassNetwork.io.regWriteValidEXE1 := EXE1.input(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
+            rs1BypassNetwork.io.regWriteValidEXE2 := EXE2.input(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
             rs1BypassNetwork.io.regWriteValidWB   <> wvalid
             rs1BypassNetwork.io.rsForwardType     <> rs1ForwardType
             rs1BypassNetwork.io.forwardable       <> rs1Forwardable
 
             rs2BypassNetwork.io.rsISS <> src2Addr.asBits
-            rs2BypassNetwork.io.rdEXE1 <> EXE1.output(writeSignals.REG_WRITE_ADDR_WB)
-            rs2BypassNetwork.io.rdEXE2 <> EXE2.output(writeSignals.REG_WRITE_ADDR_WB)
+            rs2BypassNetwork.io.rdEXE1 <> EXE1.input(writeSignals.REG_WRITE_ADDR_WB)
+            rs2BypassNetwork.io.rdEXE2 <> EXE2.input(writeSignals.REG_WRITE_ADDR_WB)
             rs2BypassNetwork.io.rdWB   <> waddr
-            rs2BypassNetwork.io.fuTypeEXE1 <> EXE1.output(writeSignals.FUType_WB)
-            rs2BypassNetwork.io.fuTypeEXE2 <> EXE2.output(writeSignals.FUType_WB)
-            rs2BypassNetwork.io.regWriteValidEXE1 := EXE1.output(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
-            rs2BypassNetwork.io.regWriteValidEXE2 := EXE2.output(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
+            rs2BypassNetwork.io.fuTypeEXE1 <> EXE1.input(writeSignals.FUType_WB)
+            rs2BypassNetwork.io.fuTypeEXE2 <> EXE2.input(writeSignals.FUType_WB)
+            rs2BypassNetwork.io.fuTypeWB <> WB.input(writeSignals.FUType_WB)
+            rs2BypassNetwork.io.regWriteValidEXE1 := EXE1.input(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
+            rs2BypassNetwork.io.regWriteValidEXE2 := EXE2.input(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
             rs2BypassNetwork.io.regWriteValidWB   <> wvalid
             rs2BypassNetwork.io.rsForwardType     <> rs2ForwardType
             rs2BypassNetwork.io.forwardable       <> rs2Forwardable
@@ -108,7 +113,7 @@ class RegFilePlugin extends Plugin[Core]{
             val inst = input(fetchSignals.INST)
             val fuType = input(decodeSignals.FUType)
             src1Addr := U(inst(LA32R.rjRange))
-            src2Addr := (fuType === FuType.ALU) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
+            src2Addr := (fuType === FuType.ALU || fuType === FuType.MUL) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
 
             // val src1Data = (wvalid && src1Addr.asBits === waddr && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src1Addr)
             // val src2Data = (wvalid && src2Addr.asBits === waddr && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src2Addr)
@@ -178,6 +183,9 @@ class RegFilePlugin extends Plugin[Core]{
                 }
                 is(BRU){
                     wdata := (input(fetchSignals.PC).asUInt + U(4)).asBits
+                }
+                is(MUL){
+                    wdata := input(writeSignals.MUL_RESULT_WB)
                 }
             }
 

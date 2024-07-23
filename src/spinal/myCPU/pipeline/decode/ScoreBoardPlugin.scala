@@ -6,7 +6,7 @@ import spinal.core._
 import _root_.myCPU.constants.BRUOpType
 import myCPU.constants.JumpType
 import myCPU.constants.FuType
-import myCPU.constants.ALUOpSrc
+import myCPU.constants.OpSrc
 import _root_.myCPU.core.RegFilePlugin
 
 class ScoreBoardPlugin extends Plugin[Core]{
@@ -20,7 +20,7 @@ class ScoreBoardPlugin extends Plugin[Core]{
         import pipeline._
         import pipeline.config._
 
-        ISS plug new Area{
+        val setScoreboard = ISS plug new Area{
             import ISS._
 
 
@@ -36,17 +36,17 @@ class ScoreBoardPlugin extends Plugin[Core]{
 
             arbitration.haltItself setWhen(
                 ((scoreBoard(output(decodeSignals.SRC1Addr).asUInt) 
-                        && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG) && !regfile.rs1Forwardable) 
+                        && (input(decodeSignals.SRC1_FROM) === OpSrc.REG) && !regfile.rs1Forwardable) 
                 || 
                 (scoreBoard(output(decodeSignals.SRC2Addr).asUInt) 
-                        && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG) && !regfile.rs2Forwardable) ))
+                        && (input(decodeSignals.SRC2_FROM) === OpSrc.REG) && !regfile.rs2Forwardable) ))
         }
 
         EXE2 plug new Area{
             import EXE2._
             val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR).asUInt
             val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddr =/= 0 && arbitration.isValidNotStuck
-            when(clrValid){
+            when(clrValid && !setScoreboard.setValid){
                 scoreBoard(regWriteAddr) := False
             }
         }

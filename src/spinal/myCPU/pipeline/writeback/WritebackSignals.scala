@@ -10,6 +10,7 @@ import myCPU.constants.FuType
 final case class WritebackSignals(config: CoreConfig){
     object FUType_WB extends Stageable(FuType())
     object ALU_RESULT_WB extends Stageable(Bits(DataWidth bits))
+    object MUL_RESULT_WB extends Stageable(Bits(DataWidth bits))
     object JUMPType_WB extends Stageable(JumpType())
     object MEM_RDATA_WB extends Stageable(Bits(DataWidth bits))
     object REG_WRITE_VALID_WB extends Stageable(Bool)

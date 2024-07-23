@@ -4,7 +4,7 @@ import myCPU.builder.Plugin
 import myCPU.core.Core
 import spinal.core._
 import myCPU.pipeline.execute.IntALUSignals
-import myCPU.constants.ALUOpSrc
+import myCPU.constants.OpSrc
 
 class IntIssuePlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
@@ -23,13 +23,13 @@ class IntIssuePlugin extends Plugin[Core]{
             val src1 = Bits(32 bits)
             val src2 = Bits(32 bits)
             switch(input(decodeSignals.SRC1_FROM)) {
-                is(ALUOpSrc.REG) {
+                is(OpSrc.REG) {
                     src1 := (output(decodeSignals.SRC1))
                 }
-                is(ALUOpSrc.IMM) {
+                is(OpSrc.IMM) {
                     src1 := (input(decodeSignals.IMM))
                 }
-                is(ALUOpSrc.PC) {
+                is(OpSrc.PC) {
                     src1 := (input(fetchSignals.PC))
                 }
                 default {
@@ -38,13 +38,13 @@ class IntIssuePlugin extends Plugin[Core]{
             }
 
             switch(input(decodeSignals.SRC2_FROM)) {
-                is(ALUOpSrc.REG) {
+                is(OpSrc.REG) {
                     src2 := (output(decodeSignals.SRC2))
                 }
-                is(ALUOpSrc.IMM) {
+                is(OpSrc.IMM) {
                     src2 := (input(decodeSignals.IMM))
                 }
-                is(ALUOpSrc.PC) {
+                is(OpSrc.PC) {
                     src2 := (input(fetchSignals.PC))
                 }
                 default {

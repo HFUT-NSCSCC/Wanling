@@ -6,7 +6,7 @@ import myCPU.builder.Plugin
 import myCPU.core.Core
 import myCPU.constants.ALUOpType
 import myCPU.pipeline.fetch.PCManagerPlugin
-import myCPU.constants.ALUOpSrc
+import myCPU.constants.OpSrc
 
 class IntALUPlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
@@ -22,21 +22,7 @@ class IntALUPlugin extends Plugin[Core]{
             val aluSignals = input(exeSignals.intALUSignals)
 
             val IntALUOp = aluSignals.ALUOp
-            // ----- 有优先级 -----
-            // val src1 = Select(
-            //     (aluSignals.SRC1_FROM === ALUOpSrc.REG) -> U(aluSignals.SRC1),
-            //     (aluSignals.SRC1_FROM === ALUOpSrc.IMM) -> U(aluSignals.IMM),
-            //     (aluSignals.SRC1_FROM === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
-            //     default -> U(0, 32 bits)
-            // )
-            // val src2 = Select(
-            //     (aluSignals.SRC2_FROM === ALUOpSrc.REG) -> U(aluSignals.SRC2),
-            //     (aluSignals.SRC2_FROM === ALUOpSrc.IMM) -> U(aluSignals.IMM),
-            //     (aluSignals.SRC2_FROM === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
-            //     default -> U(0, 32 bits)
-            // )
 
-            // ----- 无优先级 -----
             val src1 = U(aluSignals.SRC1)
             val src2 = U(aluSignals.SRC2)
 
@@ -76,9 +62,6 @@ class IntALUPlugin extends Plugin[Core]{
                 }
                 is(SRA){
                     result := (src1.asSInt |>> sa).asUInt
-                }
-                is(MUL){
-                    result := (src1.asSInt * src2.asSInt).asUInt(31 downto 0)
                 }
                 is(LU12I){
                     result := src1

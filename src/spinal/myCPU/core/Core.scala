@@ -19,6 +19,7 @@ import myCPU.pipeline.issue.LsuIssuePlugin
 import _root_.myCPU.pipeline.fetch.FetcherPlugin
 import myCPU.pipeline.decode.ScoreBoardPlugin
 import _root_.myCPU.pipeline.issue.IssuePlugin
+import myCPU.pipeline.execute.MulPlugin
 
 case class CoreConfig(){
     // object PC extends Stageable(Bits(PCWidth bits))
@@ -113,6 +114,7 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
         // new BruIssuePlugin,
         new LsuIssuePlugin,
         new IntALUPlugin,
+        new MulPlugin,
         new LSUPlugin,
         new BRUPlugin,
     )
