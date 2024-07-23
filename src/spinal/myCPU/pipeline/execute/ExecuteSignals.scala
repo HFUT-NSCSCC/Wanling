@@ -7,7 +7,7 @@ import myCPU.core.CoreConfig
 import myCPU.constants.ALUOpType
 import myCPU.constants.BRUOpType
 import myCPU.constants.JumpType
-import myCPU.constants.ALUOpSrc
+import myCPU.constants.OpSrc
 
 class ExecuteSignals(config: CoreConfig) {
     object intALUSignals extends Stageable(IntALUSignals())

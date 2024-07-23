@@ -49,8 +49,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         addDefault(FUType, FuType.ALU)
         addDefault(ALUOp, ALUOpType.ADD)
-        addDefault(SRC1_FROM, ALUOpSrc.NONE)
-        addDefault(SRC2_FROM, ALUOpSrc.NONE)
+        addDefault(SRC1_FROM, OpSrc.NONE)
+        addDefault(SRC2_FROM, OpSrc.NONE)
         addDefault(IMMExtType, ImmExtType.NONE)
         addDefault(JUMPType, JumpType.NONE)
         addDefault(BRUOp, BRUOpType.NONE)
@@ -64,8 +64,8 @@ class DecoderPlugin extends Plugin[Core]{
         val alu2RInst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
             REG_WRITE_VALID -> True,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.REG
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.REG
         )
 
         add(List(
@@ -80,14 +80,24 @@ class DecoderPlugin extends Plugin[Core]{
             LA32R.SLL  -> (alu2RInst ++ List(ALUOp -> ALUOpType.SLL)),
             LA32R.SRL  -> (alu2RInst ++ List(ALUOp -> ALUOpType.SRL)),
             LA32R.SRA  -> (alu2RInst ++ List(ALUOp -> ALUOpType.SRA)),
-            LA32R.MUL  -> (alu2RInst ++ List(ALUOp -> ALUOpType.MUL)),
         )
         )
 
+        val mul2RInst = List[(Stageable[_ <: BaseType], Any)](
+            FUType -> FuType.MUL,
+            REG_WRITE_VALID -> True,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.REG
+        )
+
+        add(List(
+            LA32R.MUL  -> (mul2RInst ++ List()),
+        ))
+
         val alu2R1I8Inst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.IMM,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.IMM,
             IMMExtType -> ImmExtType.UI8,
             REG_WRITE_VALID -> True
         )
@@ -100,8 +110,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         val alu2R1I12SInst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.IMM,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.IMM,
             IMMExtType -> ImmExtType.SI12,
             REG_WRITE_VALID -> True
         )
@@ -114,8 +124,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         val alu2R1I12UInst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.IMM,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.IMM,
             IMMExtType -> ImmExtType.UI12,
             REG_WRITE_VALID -> True
         )
@@ -128,8 +138,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         val lsu2R1I12InstLoad = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.LSU,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.IMM,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.IMM,
             IMMExtType -> ImmExtType.SI12,
         )
 
@@ -143,8 +153,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         val lsu2R1I12InstStore = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.LSU,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.REG,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.REG,
             IMMExtType -> ImmExtType.SI12,
         )
 
@@ -156,8 +166,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         val bru2R1I21Inst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.BRU,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.REG,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.REG,
             IMMExtType -> ImmExtType.SI16,
         )
 
@@ -176,7 +186,7 @@ class DecoderPlugin extends Plugin[Core]{
 
         val alu1R1I20Inst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.ALU,
-            SRC1_FROM -> ALUOpSrc.IMM,
+            SRC1_FROM -> OpSrc.IMM,
             IMMExtType -> ImmExtType.SI20,
             ALUOp -> ALUOpType.LU12I,
             REG_WRITE_VALID -> True
@@ -188,8 +198,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         val bru0R1IInst = List[(Stageable[_ <: BaseType], Any)](
             FUType -> FuType.BRU,
-            SRC1_FROM -> ALUOpSrc.REG,
-            SRC2_FROM -> ALUOpSrc.REG,
+            SRC1_FROM -> OpSrc.REG,
+            SRC2_FROM -> OpSrc.REG,
             IMMExtType -> ImmExtType.SI26,
         )
 
@@ -200,8 +210,8 @@ class DecoderPlugin extends Plugin[Core]{
 
         add(LA32R.PCADDU12I, List(
             FUType -> FuType.ALU, 
-            SRC1_FROM -> ALUOpSrc.PC,
-            SRC2_FROM -> ALUOpSrc.IMM,
+            SRC1_FROM -> OpSrc.PC,
+            SRC2_FROM -> OpSrc.IMM,
             IMMExtType -> ImmExtType.SI20, 
             REG_WRITE_VALID -> True))
     }

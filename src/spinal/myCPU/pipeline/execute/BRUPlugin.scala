@@ -32,13 +32,13 @@ class BRUPlugin extends Plugin[Core]{
             // -----无优先级-----
             val src2 = UInt(32 bits)
             switch(src2_from){
-                is(ALUOpSrc.REG){
+                is(OpSrc.REG){
                     src2 := U(output(decodeSignals.SRC2))
                 }
-                is(ALUOpSrc.IMM){
+                is(OpSrc.IMM){
                     src2 := U(input(decodeSignals.IMM))
                 }
-                is(ALUOpSrc.PC){
+                is(OpSrc.PC){
                     src2 := U(input(fetchSignals.PC))
                 }
                 default{

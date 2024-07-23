@@ -14,6 +14,7 @@ class BypassNetwork extends Component{
         val rdWB   = in(Bits(RegAddrWidth bits))
         val fuTypeEXE1 = in(FuType)
         val fuTypeEXE2 = in(FuType)
+        val fuTypeWB = in(FuType)
         val regWriteValidEXE1 = in(Bool)
         val regWriteValidEXE2 = in(Bool)
         val regWriteValidWB = in(Bool)
@@ -28,5 +29,6 @@ class BypassNetwork extends Component{
     )
 
     io.forwardable := !(((io.rsForwardType === ForwardType.FROMEXE1.asBits) && io.fuTypeEXE1 === FuType.LSU) || 
-                        ((io.rsForwardType === ForwardType.FROMEXE2.asBits) && io.fuTypeEXE2 === FuType.LSU))
+                        ((io.rsForwardType === ForwardType.FROMEXE2.asBits) && io.fuTypeEXE2 === FuType.LSU) ||
+                        ((io.rsForwardType === ForwardType.FROMWB.asBits) && io.fuTypeWB === FuType.LSU))
 }

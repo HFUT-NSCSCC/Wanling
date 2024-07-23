@@ -5,5 +5,6 @@ import spinal.core.binarySequential
 
 object FuType extends SpinalEnum(binarySequential){
     val ALU, BRU, LSU = newElement()
+    val MUL = newElement()
   
 }
