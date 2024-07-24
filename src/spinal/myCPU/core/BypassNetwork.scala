@@ -28,7 +28,6 @@ class BypassNetwork extends Component{
         default -> ForwardType.FROMREG.asBits
     )
 
-    io.forwardable := !(((io.rsForwardType === ForwardType.FROMEXE1.asBits) && io.fuTypeEXE1 === FuType.LSU) || 
-                        ((io.rsForwardType === ForwardType.FROMEXE2.asBits) && io.fuTypeEXE2 === FuType.LSU) ||
-                        ((io.rsForwardType === ForwardType.FROMWB.asBits) && io.fuTypeWB === FuType.LSU))
+    io.forwardable := !(((io.rsForwardType === ForwardType.FROMEXE1.asBits) && (io.fuTypeEXE1 === FuType.LSU || io.fuTypeEXE1 === FuType.MUL)) || 
+                        ((io.rsForwardType === ForwardType.FROMEXE2.asBits) && io.fuTypeEXE2 === FuType.LSU))
 }

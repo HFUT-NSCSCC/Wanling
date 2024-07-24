@@ -39,6 +39,7 @@ class LSUPlugin extends Plugin[Core]{
             memSignals.MEM_WDATA := lsuSignals.SRC2
             memSignals.MEM_MASK := (lsuSignals.MEM_READ | lsuSignals.MEM_WRITE) |<< vaddr(1 downto 0)
 
+            // 发起读写请求
             when(arbitration.notStuck){
                 data_reg.en := memSignals.MEM_EN
                 data_reg.addr := memSignals.MEM_ADDR

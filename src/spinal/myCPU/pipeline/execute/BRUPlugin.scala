@@ -16,35 +16,10 @@ class BRUPlugin extends Plugin[Core]{
         import pipeline._
         import pipeline.config._
 
-        ISS plug new Area{
-            import ISS._
+        EXE1 plug new Area{
+            import EXE1._
             val src1 = input(decodeSignals.SRC1).asUInt
-            val src2_from = input(decodeSignals.SRC2_FROM)
-            // -----有优先级-----
-            // val src2 = Select(
-            //     (src2_from === ALUOpSrc.REG) -> U(output(decodeSignals.SRC2)),
-            //     (src2_from === ALUOpSrc.IMM) -> U(input(decodeSignals.IMM)),
-            //     (src2_from === ALUOpSrc.PC)  -> U(input(fetchSignals.PC)),
-            //     default -> U(0, 32 bits)
-            // )
-
-
-            // -----无优先级-----
-            val src2 = UInt(32 bits)
-            switch(src2_from){
-                is(OpSrc.REG){
-                    src2 := U(output(decodeSignals.SRC2))
-                }
-                is(OpSrc.IMM){
-                    src2 := U(input(decodeSignals.IMM))
-                }
-                is(OpSrc.PC){
-                    src2 := U(input(fetchSignals.PC))
-                }
-                default{
-                    src2 := U(0, 32 bits)
-                }
-            }
+            val src2 = input(decodeSignals.SRC2).asUInt
             val bruOp = input(decodeSignals.BRUOp)
 
 

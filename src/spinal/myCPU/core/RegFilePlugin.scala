@@ -20,8 +20,8 @@ class RegFilePlugin extends Plugin[Core]{
     // val debug = out(new DebugBundle())
 
     val wvalid = Bool
-    val waddr = Bits(RegAddrWidth bits).addAttribute("DONT_TOUCH")
-    val wdata = Bits(DataWidth bits).addAttribute("DONT_TOUCH")
+    val waddr = Bits(RegAddrWidth bits)
+    val wdata = Bits(DataWidth bits)
 
     val fromEXE1 = Bits(DataWidth bits)
     val fromEXE2 = Bits(DataWidth bits)
@@ -43,7 +43,7 @@ class RegFilePlugin extends Plugin[Core]{
         import pipeline.config._
 
         val global = pipeline plug new Area{
-            val regFile = Mem(Bits(32 bits), NR_REG).addAttribute(Verilator.public).addAttribute("DONT_TOUCH")
+            val regFile = Mem(Bits(32 bits), NR_REG).addAttribute(Verilator.public)
             regFile.init(List.fill(NR_REG)(B(0, 32 bits)))
 
             switch(EXE1.output(writeSignals.FUType_WB)) {
