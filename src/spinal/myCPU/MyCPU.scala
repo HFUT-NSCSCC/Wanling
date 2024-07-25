@@ -5,23 +5,38 @@ import myCPU.core._
 import myCPU.pipeline.fetch._
 import myCPU.pipeline.decode._
 import myCPU.pipeline.execute._
+import myCPU.peripheral.Bridge
+import myCPU.peripheral.BusBundle
+import _root_.myCPU.peripheral.Sram
+import myCPU.peripheral.ExtSramCtrl
+import myCPU.peripheral.BaseSramCtrl
 
-class InstBundle() extends Bundle{
-    val en = out(Bool)
-    // val we = out(Bits(4 bits))
-    val addr = out(Bits(32 bits))
-    val rdata = in(Bits(32 bits))
+case class InstBundle() extends Bundle with IMasterSlave{
+    val en = (Bool)
+    // val we = (Bits(4 bits))
+    val addr = (Bits(32 bits))
+    val rdata = (Bits(32 bits))
+    
+    def asMaster(): Unit = {
+        out(en, addr)
+        in(rdata)
+    }
 }
 
-class DataBundle() extends Bundle{
-    val en = out(Bool)
-    val we = out(Bits(4 bits))
-    val addr = out(Bits(32 bits))
-    val wdata = out(Bits(32 bits))
-    val rdata = in(Bits(32 bits))
-    // val do_store = in(Bool)
-    val do_store_base = in(Bool)
-    val do_store_ext  = in(Bool)
+case class DataBundle() extends Bundle with IMasterSlave{
+    val en = (Bool)
+    val we = (Bits(4 bits))
+    val addr = (Bits(32 bits))
+    val wdata = (Bits(32 bits))
+    val rdata = (Bits(32 bits))
+    // val do_store = (Bool)
+    val do_store_base = (Bool)
+    val do_store_ext  = (Bool)
+
+    def asMaster(): Unit = {
+        out(en, we, addr, wdata)
+        in(rdata, do_store_base, do_store_ext)
+    }
 }
 
 class DebugBundle() extends Bundle{
@@ -35,11 +50,13 @@ class MyCPU(val config: CoreConfig) extends Component{
     val io = new Bundle{
         val clk = in(Bool)
         val reset = in(Bool)
-        val ipi = in(Bool)
-        val interrupt = in(Bits(8 bits))
-        val inst = new InstBundle()
-        val data = new DataBundle()
-        // val debug = out(new DebugBundle())
+        // val inst = master(InstBundle())
+        // val data = master(DataBundle())
+        // val instSram = master(BusBundle("inst_sram"))
+        // val dataSram = master(BusBundle("data_sram"))
+        val baseSram = master(Sram("base_ram"))
+        val extSram = master(Sram("ext_ram"))
+        val conf = master(BusBundle("conf"))
     }
 
     val defaultClockDomain = ClockDomain(
@@ -62,10 +79,19 @@ class MyCPU(val config: CoreConfig) extends Component{
         // io.debug <> regFile.debug
 
         val fetcherPlugin = cpu.service(classOf[FetcherPlugin])
-        io.inst <> fetcherPlugin.instBundle
+        val baseSramCtrl = new BaseSramCtrl()
+        baseSramCtrl.io.instBundle <> fetcherPlugin.instBundle
+        baseSramCtrl.io.baseSram <> io.baseSram
 
         val LSUPlugin = cpu.service(classOf[LSUPlugin])
-        io.data <> LSUPlugin.data
+        val bridge = new Bridge()
+        val extSramCtrl = new ExtSramCtrl()
+        bridge.io.dBus <> LSUPlugin.data
+        bridge.io.instSram <> baseSramCtrl.io.instSram
+
+        bridge.io.dataSram  <> extSramCtrl.io.dataSram
+        extSramCtrl.io.extSram <> io.extSram
+        bridge.io.conf <> io.conf
     }
   
 }

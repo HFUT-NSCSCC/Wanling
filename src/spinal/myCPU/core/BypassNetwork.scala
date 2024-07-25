@@ -2,7 +2,7 @@ package myCPU.core
 
 import spinal.core._
 import spinal.core.default
-import myCPU.constants.LA32.RegAddrWidth
+import myCPU.core.LA32R.RegAddrWidth
 import myCPU.constants.ForwardType
 import myCPU.constants.FuType
 

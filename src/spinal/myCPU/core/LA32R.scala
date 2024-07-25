@@ -2,6 +2,19 @@ package myCPU.core
 import spinal.core._
 
 object LA32R {
+    def PCWidth = 32
+    def PC_INIT:Long = 0x80000000L
+
+    def CYCLES_TO_WRITE = 2
+    def CYCLES_TO_READ = 1
+
+    def InstWidth = 32
+
+    def NR_REG = 32
+    def RegAddrWidth = log2Up(NR_REG)
+
+    def DataWidth = 32
+    def AddrWidth = 32
     def rdRange = 4 downto 0
     def rjRange = 9 downto 5
     def rkRange = 14 downto 10
@@ -66,6 +79,6 @@ object LA32R {
     def PCADDU12I = MM("0001110 -------------------- -----")
 
     // I26-type
-    def B         = MM("010100 ---------------- ----------")
+    def LA_B         = MM("010100 ---------------- ----------") // 避免与B(bit)混淆
     def BL        = MM("010101 ---------------- ----------")
 }

@@ -4,7 +4,7 @@ import myCPU.builder.Plugin
 import myCPU.core.Core
 import spinal.core._
 import spinal.lib._
-import myCPU.constants.LA32._
+import myCPU.core.LA32R._
 import myCPU.InstBundle
 import myCPU.constants.ImmExtType
 
@@ -34,7 +34,7 @@ class PCManagerPlugin extends Plugin[Core]{
         
         IF1 plug new Area{
             import IF1._
-            val PCval = RegNextWhen[UInt](nextPC, !arbitration.isStuck ,init = PC_INIT) 
+            val PCval = RegNextWhen[UInt](nextPC, !arbitration.isStuck ,init = PC_INIT - 4) 
             arbitration.haltByOther setWhen(ClockDomain.current.isResetActive)
             // instBundle.en := !arbitration.isStuck
             // instBundle.addr := PCval.asBits
@@ -56,9 +56,10 @@ class PCManagerPlugin extends Plugin[Core]{
             nextPC := Mux(redirect, redirectTarget,
                       Mux(preJump, predictTarget,
                       PCval + 4))
+            insert(fetchSignals.NPC) := nextPC
             
             insert(fetchSignals.PREJUMP) := preJump
-            insert(fetchSignals.PC) := PCval.asBits
+            insert(fetchSignals.PC) := PCval
 
         }
         
@@ -73,7 +74,7 @@ class PCManagerPlugin extends Plugin[Core]{
             val imm = immExtForBranch.io.imm.asUInt
 
             preJump := isBranch && imm.msb && arbitration.isValidNotStuck
-            predictTarget := input(fetchSignals.PC).asUInt + imm
+            predictTarget := input(fetchSignals.PC) + imm
 
             arbitration.flushNext setWhen(preJump)
             

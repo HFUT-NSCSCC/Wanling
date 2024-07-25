@@ -204,7 +204,7 @@ class DecoderPlugin extends Plugin[Core]{
         )
 
         add(List(
-            LA32R.B -> (bru0R1IInst ++ List(JUMPType -> JumpType.JB)),
+            LA32R.LA_B -> (bru0R1IInst ++ List(JUMPType -> JumpType.JB)),
             LA32R.BL -> (bru0R1IInst ++ List(JUMPType -> JumpType.JBL, REG_WRITE_VALID -> True)),
         ))
 

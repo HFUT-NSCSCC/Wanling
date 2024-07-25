@@ -30,7 +30,7 @@ class IntIssuePlugin extends Plugin[Core]{
                     src1 := (input(decodeSignals.IMM))
                 }
                 is(OpSrc.PC) {
-                    src1 := (input(fetchSignals.PC))
+                    src1 := (input(fetchSignals.PC)).asBits
                 }
                 default {
                     src1 := B(0, 32 bits)
@@ -45,7 +45,7 @@ class IntIssuePlugin extends Plugin[Core]{
                     src2 := (input(decodeSignals.IMM))
                 }
                 is(OpSrc.PC) {
-                    src2 := (input(fetchSignals.PC))
+                    src2 := (input(fetchSignals.PC)).asBits
                 }
                 default {
                     src2 := B(0, 32 bits)

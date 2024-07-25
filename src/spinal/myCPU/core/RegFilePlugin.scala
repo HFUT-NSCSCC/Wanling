@@ -5,7 +5,7 @@ import spinal.core._
 import spinal.lib._
 import myCPU._
 import myCPU.constants._
-import myCPU.constants.LA32._
+import myCPU.core.LA32R._
 import _root_.myCPU.constants.JumpType._
 import _root_.myCPU.constants.FuType._
 import myCPU.constants.JumpType._
@@ -51,7 +51,7 @@ class RegFilePlugin extends Plugin[Core]{
                     fromEXE1 := EXE1.output(writeSignals.ALU_RESULT_WB)
                 }
                 is(FuType.BRU) {
-                    fromEXE1 := (EXE1.output(fetchSignals.PC).asUInt + U(4)).asBits
+                    fromEXE1 := (EXE1.output(fetchSignals.PC) + U(4)).asBits
                 }
                 default{
                     fromEXE1 := 0
@@ -63,7 +63,7 @@ class RegFilePlugin extends Plugin[Core]{
                     fromEXE2 := EXE2.output(writeSignals.ALU_RESULT_WB)
                 }
                 is(FuType.BRU) {
-                    fromEXE2 := (EXE2.output(fetchSignals.PC).asUInt + U(4)).asBits
+                    fromEXE2 := (EXE2.output(fetchSignals.PC) + U(4)).asBits
                 }
                 // is(FuType.LSU) {
                 //     fromEXE2 := EXE2.output(writeSignals.MEM_RDATA_WB)
@@ -175,16 +175,16 @@ class RegFilePlugin extends Plugin[Core]{
             // }
 
             switch(input(writeSignals.FUType_WB)){
-                is(ALU){
+                is(FuType.ALU){
                     wdata := input(writeSignals.ALU_RESULT_WB)
                 }
-                is(LSU){
+                is(FuType.LSU){
                     wdata := input(writeSignals.MEM_RDATA_WB)
                 }
-                is(BRU){
-                    wdata := (input(fetchSignals.PC).asUInt + U(4)).asBits
+                is(FuType.BRU){
+                    wdata := (input(fetchSignals.PC) + U(4)).asBits
                 }
-                is(MUL){
+                is(FuType.MUL){
                     wdata := input(writeSignals.MUL_RESULT_WB)
                 }
             }

@@ -1,7 +1,7 @@
 package myCPU.pipeline.writeback
 
 import myCPU.core.CoreConfig
-import myCPU.constants.LA32._
+import myCPU.core.LA32R._
 import spinal.core._
 import myCPU.builder._
 import myCPU.constants.JumpType
@@ -15,6 +15,6 @@ final case class WritebackSignals(config: CoreConfig){
     object REG_WRITE_VALID_WB extends Stageable(Bool)
     object REG_WRITE_ADDR_WB extends Stageable(Bits(RegAddrWidth bits))
     object REG_WRITE_DATA_WB extends Stageable(Bits(DataWidth bits))
-    object PC_WB extends Stageable(Bits(PCWidth bits))
+    object PC_WB extends Stageable(UInt(PCWidth bits))
 
 }

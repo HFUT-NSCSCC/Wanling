@@ -2,7 +2,7 @@ package myCPU.pipeline.execute
 
 import spinal.core._
 import myCPU.builder._
-import myCPU.constants.LA32._
+import myCPU.core.LA32R._
 import myCPU.core.CoreConfig
 import myCPU.constants.ALUOpType
 import myCPU.constants.BRUOpType

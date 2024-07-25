@@ -7,7 +7,7 @@ import myCPU.pipeline.decode.DecoderPlugin
 import myCPU.pipeline.execute.IntALUPlugin
 import myCPU.pipeline.execute.LSUPlugin
 import myCPU.constants._
-import myCPU.constants.LA32._
+import myCPU.core.LA32R._
 import myCPU.pipeline.execute.BRUPlugin
 import myCPU.pipeline.fetch.FetchSignals
 import myCPU.pipeline.execute.ExecuteSignals
