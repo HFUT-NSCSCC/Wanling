@@ -11,11 +11,12 @@ case class BusBundle(targetName: String) extends Bundle with IMasterSlave{
     val addr = Bits(32 bits)
     val wdata = Bits(32 bits)
     val rdata = Bits(32 bits)
-    val do_store = Bool
+    val rready = Bool
+    val wready = Bool
 
     def asMaster(): Unit = {
         out(en, we, addr, wdata)
-        in(rdata, do_store)
+        in(rdata, wready, rready)
     }
 }
 
@@ -28,8 +29,8 @@ object BridgeConf {
 class Bridge extends Component{
     val io = new Bundle{
         val dBus = slave(DataBundle())
-        val instSram = master(BusBundle("inst_sram"))
-        val dataSram = master(BusBundle("data_sram"))
+        val toBaseCtrl = master(BusBundle("inst_sram"))
+        val toExtCtrl = master(BusBundle("data_sram"))
         val conf = master(BusBundle("conf"))
     }
 
@@ -41,25 +42,25 @@ class Bridge extends Component{
     val sel_ext_r  = RegNext(sel_ext, init = False)
     val sel_conf_r = RegNext(sel_conf, init = False)
 
-    io.instSram.en := io.dBus.en & sel_base
-    io.instSram.we := (io.instSram.en #* 4) & io.dBus.we
-    io.instSram.addr := io.dBus.addr
-    io.instSram.wdata := io.dBus.wdata
+    io.toBaseCtrl.en := io.dBus.en & sel_base
+    io.toBaseCtrl.we := (io.toBaseCtrl.en #* 4) & io.dBus.we
+    io.toBaseCtrl.addr := io.dBus.addr
+    io.toBaseCtrl.wdata := io.dBus.wdata
 
-    io.dataSram.en := io.dBus.en & sel_ext
-    io.dataSram.we := (io.dataSram.en #* 4) & io.dBus.we
-    io.dataSram.addr := io.dBus.addr
-    io.dataSram.wdata := io.dBus.wdata
+    io.toExtCtrl.en := io.dBus.en & sel_ext
+    io.toExtCtrl.we := (io.toExtCtrl.en #* 4) & io.dBus.we
+    io.toExtCtrl.addr := io.dBus.addr
+    io.toExtCtrl.wdata := io.dBus.wdata
 
     io.conf.en := io.dBus.en & sel_conf
     io.conf.we := (io.conf.en #* 4) & io.dBus.we
     io.conf.addr := io.dBus.addr
     io.conf.wdata := io.dBus.wdata
 
-    io.dBus.rdata := ((sel_base_r #* 32) & io.instSram.rdata) |
-                     ((sel_ext_r  #* 32) & io.dataSram.rdata) |
+    io.dBus.rdata := ((sel_base_r #* 32) & io.toBaseCtrl.rdata) |
+                     ((sel_ext_r  #* 32) & io.toExtCtrl.rdata) |
                      ((sel_conf_r #* 32) & io.conf.rdata)
 
-    io.dBus.do_store_base := io.instSram.do_store
-    io.dBus.do_store_ext := io.dataSram.do_store
+    io.dBus.wready := (sel_base && io.toBaseCtrl.wready) || (sel_ext && io.toExtCtrl.wready) || (sel_conf && io.conf.wready)
+    io.dBus.rvalid := (sel_base && io.toBaseCtrl.rready) || (sel_ext && io.toExtCtrl.rready) || (sel_conf && io.conf.rready)
 }

@@ -34,7 +34,7 @@ class LSUPlugin extends Plugin[Core]{
 
             val memSignals = new MemSignals()
             memSignals.MEM_ADDR := vaddr.asBits & 0x7FFFFFFCL
-            memSignals.MEM_EN := (lsuSignals.MEM_READ =/= B"0000" || lsuSignals.MEM_WRITE =/= B"0000") && arbitration.isValid
+            memSignals.MEM_EN := (lsuSignals.MEM_READ.orR || lsuSignals.MEM_WRITE.orR) && arbitration.isValidNotStuck
             memSignals.MEM_WE := lsuSignals.MEM_WRITE & (arbitration.isValid.asSInt.resize(4 bits).asBits)
             memSignals.MEM_WDATA := lsuSignals.SRC2
             memSignals.MEM_MASK := (lsuSignals.MEM_READ | lsuSignals.MEM_WRITE) |<< vaddr(1 downto 0)
@@ -43,6 +43,13 @@ class LSUPlugin extends Plugin[Core]{
             when(arbitration.notStuck){
                 data_en := memSignals.MEM_EN
             }
+            // 连续的写入需要等待上一个数据写入完成
+            arbitration.haltItself setWhen(
+                ((!data.wready) && lsuSignals.MEM_WRITE.orR && arbitration.isValid))
+            arbitration.haltItself setWhen(
+                ((!data.rvalid) && lsuSignals.MEM_READ.orR && arbitration.isValid))
+            // 暂停前端指令供应, 避免访存与取指争抢且导致取指认为取到了指令 (优先访存)
+            ISS.arbitration.haltItself setWhen((memSignals.MEM_EN && !memSignals.MEM_ADDR(22) && arbitration.isValid))
             data.en := memSignals.MEM_EN && arbitration.notStuck
             data.addr := memSignals.MEM_ADDR
             data.wdata := memSignals.MEM_WDATA
@@ -58,11 +65,6 @@ class LSUPlugin extends Plugin[Core]{
             import EXE2._
             val memSignals = input(exeSignals.memSignals)
             val lsuSignals = input(exeSignals.lsuSignals)
-            // 暂停前端指令供应
-            ISS.arbitration.haltItself setWhen((data_en && !memSignals.MEM_ADDR(22) && arbitration.isValid) || (data.do_store_base))
-            // 连续的写入需要等待上一个数据写入完成
-            arbitration.haltItself setWhen(
-                ((data.do_store_base || data.do_store_ext) && memSignals.MEM_MASK =/= B"0000" && arbitration.isValid))
             // memory read
             val rawData = data.rdata
             val rdata_ext = Bits(32 bits)

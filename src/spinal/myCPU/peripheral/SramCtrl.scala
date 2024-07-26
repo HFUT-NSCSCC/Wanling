@@ -24,22 +24,23 @@ case class Sram(ramname: String) extends Bundle with IMasterSlave{
 
 class ExtSramCtrl extends Component{
     val io = new Bundle{
-        val dataSram = slave(BusBundle("data_sram"))
+        val fromBridgeExt = slave(BusBundle("data_sram"))
         val extSram = master(Sram("ext_sram"))
     }
     val extSram_r = Reg(Sram("ext_sram_r"))
+    extSram_r.addr init(B(0, 20 bits))
+    extSram_r.be_n init(B"1111")
+    extSram_r.oe_n init(True)
     extSram_r.ce_n init(True)
+    extSram_r.we_n init(True)
     val counter = Reg(UInt(4 bits))
-    val do_store = RegInit(False)
-    val wdata = RegInit(B(0, 32 bits))
-    io.dataSram.do_store := do_store
 
-    when(do_store){
-        io.extSram.data := wdata
+    when(!extSram_r.we_n){
+        io.extSram.data := extSram_r.data
     }
 
     // read the data
-    io.dataSram.rdata := io.extSram.data
+    io.fromBridgeExt.rdata := io.extSram.data
     io.extSram.addr := extSram_r.addr
     io.extSram.be_n := extSram_r.be_n
     io.extSram.ce_n := extSram_r.ce_n
@@ -50,6 +51,8 @@ class ExtSramCtrl extends Component{
         val IDLE = new State with EntryPoint
         val READ = new State
         val WRITE = new State
+        io.fromBridgeExt.wready := True
+        io.fromBridgeExt.rready := True
 
         IDLE
             .onEntry{
@@ -58,8 +61,8 @@ class ExtSramCtrl extends Component{
                 extSram_r.we_n := True
             }
             .whenIsActive{
-                when(io.dataSram.en){
-                    when(io.dataSram.we.orR){
+                when(io.fromBridgeExt.en){
+                    when(io.fromBridgeExt.we.orR){
                         goto(WRITE)
                     } otherwise {
                         goto(READ)
@@ -72,7 +75,7 @@ class ExtSramCtrl extends Component{
         READ
             .onEntry{
                 counter := 0
-                extSram_r.addr := io.dataSram.addr(21 downto 2)
+                extSram_r.addr := io.fromBridgeExt.addr(21 downto 2)
                 extSram_r.be_n := B"0000"
                 extSram_r.ce_n := False
                 extSram_r.oe_n := False
@@ -81,12 +84,12 @@ class ExtSramCtrl extends Component{
             .whenIsActive{
                 counter := counter + 1
                 when(counter === U(CYCLES_TO_READ - 1)){
-                    when(io.dataSram.en){
-                        when(io.dataSram.we.orR){
+                    when(io.fromBridgeExt.en){
+                        when(io.fromBridgeExt.we.orR){
                             goto(WRITE)
                         } otherwise {
                             counter := 0
-                            extSram_r.addr := io.dataSram.addr(21 downto 2)
+                            extSram_r.addr := io.fromBridgeExt.addr(21 downto 2)
                             extSram_r.be_n := B"0000"
                             extSram_r.ce_n := False
                             extSram_r.oe_n := False
@@ -96,25 +99,34 @@ class ExtSramCtrl extends Component{
                     } otherwise {
                         goto(IDLE)
                     }
+                } otherwise {
+                    io.fromBridgeExt.wready := False
+                    io.fromBridgeExt.rready := False
                 }
             }
 
         WRITE
             .onEntry{
                 counter := 0
-                wdata := io.dataSram.wdata
-                extSram_r.addr := io.dataSram.addr(21 downto 2)
-                extSram_r.be_n := ~io.dataSram.we
+                extSram_r.data := io.fromBridgeExt.wdata
+                extSram_r.addr := io.fromBridgeExt.addr(21 downto 2)
+                extSram_r.be_n := ~io.fromBridgeExt.we
                 extSram_r.ce_n := False
                 extSram_r.oe_n := True
                 extSram_r.we_n := False
-                do_store := True
             }
             .whenIsActive{
                 counter := counter + 1
                 when(counter === U(CYCLES_TO_WRITE - 1)) {
-                    when(io.dataSram.en){
-                        when(io.dataSram.we.orR){
+                    when(io.fromBridgeExt.en){
+                        when(io.fromBridgeExt.we.orR){
+                            extSram_r.data := io.fromBridgeExt.wdata
+                            extSram_r.addr := io.fromBridgeExt.addr(21 downto 2)
+                            extSram_r.be_n := ~io.fromBridgeExt.we
+                            extSram_r.ce_n := False
+                            extSram_r.oe_n := True
+                            extSram_r.we_n := False
+                            counter := 0
                             goto(WRITE)
                         } otherwise {
                             goto(READ)
@@ -122,10 +134,12 @@ class ExtSramCtrl extends Component{
                     } otherwise {
                         goto(IDLE)
                     }
+                } otherwise {
+                    io.fromBridgeExt.wready := False
+                    io.fromBridgeExt.rready := False
                 }
             }
             .onExit{
-                do_store := False
             }
     }
 }
@@ -133,23 +147,24 @@ class ExtSramCtrl extends Component{
 class BaseSramCtrl extends Component{
     val io = new Bundle{
         val instBundle = slave(InstBundle())
-        val instSram = slave(BusBundle("inst_sram"))
+        val fromBridgeBase = slave(BusBundle("inst_sram"))
         val baseSram = master(Sram("base_sram"))
     }
     val baseSram_r = Reg(Sram("base_sram_r"))
+    baseSram_r.addr init(B(0, 20 bits))
+    baseSram_r.be_n init(B"1111")
+    baseSram_r.oe_n init(True)
     baseSram_r.ce_n init(True)
+    baseSram_r.we_n init(True)
     val counter = Reg(UInt(4 bits))
-    val do_store = RegInit(False)
-    val wdata = RegInit(B(0, 32 bits))
-    io.instSram.do_store := do_store
     val inst = RegInit(B(0, 32 bits))
 
-    when(do_store){
-        io.baseSram.data := wdata
+    when(!baseSram_r.we_n){
+        io.baseSram.data := baseSram_r.data
     }
 
     // read the data
-    io.instSram.rdata := io.baseSram.data
+    io.fromBridgeBase.rdata := io.baseSram.data
     
     io.baseSram.addr := baseSram_r.addr
     io.baseSram.be_n := baseSram_r.be_n
@@ -161,6 +176,9 @@ class BaseSramCtrl extends Component{
         val FETCH = new State with EntryPoint
         val READ = new State
         val WRITE = new State
+        io.fromBridgeBase.wready := True
+        io.fromBridgeBase.rready := True
+        io.instBundle.rvalid := True
         
         // io.instBundle.rdata := (io.baseSram.oe_n || stateReg =/= FETCH.refOwner) ? inst | io.baseSram.data
         val doInstFetch = RegInit(False)
@@ -181,8 +199,8 @@ class BaseSramCtrl extends Component{
                     inst := io.baseSram.data
                 }
                 when(counter === U(CYCLES_TO_READ - 1)) {
-                    when(io.instSram.en){
-                        when(io.instSram.we.orR){
+                    when(io.fromBridgeBase.en){
+                        when(io.fromBridgeBase.we.orR){
                             goto(WRITE)
                         } otherwise {
                             goto(READ)
@@ -202,51 +220,61 @@ class BaseSramCtrl extends Component{
         READ
             .onEntry{
                 counter := 0
-                baseSram_r.addr := io.instSram.addr(21 downto 2)
+                baseSram_r.addr := io.fromBridgeBase.addr(21 downto 2)
                 baseSram_r.be_n := B"0000"
-                baseSram_r.ce_n := ~io.instSram.en & ~io.instBundle.en
-                baseSram_r.oe_n := (~(io.instSram.en & ~(io.instSram.we.orR))) & (~(io.instBundle.en & True))
+                baseSram_r.ce_n := ~io.fromBridgeBase.en & ~io.instBundle.en
+                baseSram_r.oe_n := (~(io.fromBridgeBase.en & ~(io.fromBridgeBase.we.orR))) & (~(io.instBundle.en & True))
                 baseSram_r.we_n := True
             }
             .whenIsActive{
                 io.instBundle.rdata := inst
                 counter := counter + 1
                 when(counter === U(CYCLES_TO_READ - 1)) {
-                    when(io.instSram.en){
-                        when(io.instSram.we.orR){
+                    when(io.fromBridgeBase.en){
+                        when(io.fromBridgeBase.we.orR){
                             goto(WRITE)
                         } otherwise {
                             counter := 0
-                            baseSram_r.addr := io.instSram.addr(21 downto 2)
+                            baseSram_r.addr := io.fromBridgeBase.addr(21 downto 2)
                             baseSram_r.be_n := B"0000"
-                            baseSram_r.ce_n := ~io.instSram.en & ~io.instBundle.en
-                            baseSram_r.oe_n := (~(io.instSram.en & ~(io.instSram.we.orR))) & (~(io.instBundle.en & True))
+                            baseSram_r.ce_n := ~io.fromBridgeBase.en & ~io.instBundle.en
+                            baseSram_r.oe_n := (~(io.fromBridgeBase.en & ~(io.fromBridgeBase.we.orR))) & (~(io.instBundle.en & True))
                             baseSram_r.we_n := True
                             goto(READ)
                         }
                     } otherwise {
                         goto(FETCH)
                     }
+                } otherwise {
+                    io.fromBridgeBase.wready := False
+                    io.fromBridgeBase.rready := False
+                    io.instBundle.rvalid := False
                 }
             }
 
         WRITE
             .onEntry{
                 counter := 0
-                wdata := io.instSram.wdata
-                baseSram_r.addr := io.instSram.addr(21 downto 2)
-                baseSram_r.be_n := ~io.instSram.we
+                baseSram_r.data := io.fromBridgeBase.wdata
+                baseSram_r.addr := io.fromBridgeBase.addr(21 downto 2)
+                baseSram_r.be_n := ~io.fromBridgeBase.we
                 baseSram_r.ce_n := False
                 baseSram_r.oe_n := True
                 baseSram_r.we_n := False
-                do_store := True
             }
             .whenIsActive{
                 counter := counter + 1
                 io.instBundle.rdata := inst
                 when(counter === U(CYCLES_TO_WRITE - 1)) {
-                    when(io.instSram.en || io.instBundle.en){
-                        when(io.instSram.we.orR){
+                    when(io.fromBridgeBase.en || io.instBundle.en){
+                        when(io.fromBridgeBase.we.orR){
+                            counter := 0
+                            baseSram_r.data := io.fromBridgeBase.wdata
+                            baseSram_r.addr := io.fromBridgeBase.addr(21 downto 2)
+                            baseSram_r.be_n := ~io.fromBridgeBase.we
+                            baseSram_r.ce_n := False
+                            baseSram_r.oe_n := True
+                            baseSram_r.we_n := False
                             goto(WRITE)
                         } otherwise {
                             goto(READ)
@@ -254,10 +282,13 @@ class BaseSramCtrl extends Component{
                     } otherwise {
                         goto(FETCH)
                     }
+                } otherwise {
+                    io.fromBridgeBase.wready := False
+                    io.fromBridgeBase.rready := False
+                    io.instBundle.rvalid := False
                 }
             }
             .onExit{
-                do_store := False
             }
     }
 }

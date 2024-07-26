@@ -16,10 +16,11 @@ case class InstBundle() extends Bundle with IMasterSlave{
     // val we = (Bits(4 bits))
     val addr = (Bits(32 bits))
     val rdata = (Bits(32 bits))
+    val rvalid = Bool
     
     def asMaster(): Unit = {
         out(en, addr)
-        in(rdata)
+        in(rdata, rvalid)
     }
 }
 
@@ -29,13 +30,12 @@ case class DataBundle() extends Bundle with IMasterSlave{
     val addr = (Bits(32 bits))
     val wdata = (Bits(32 bits))
     val rdata = (Bits(32 bits))
-    // val do_store = (Bool)
-    val do_store_base = (Bool)
-    val do_store_ext  = (Bool)
+    val rvalid = Bool
+    val wready = Bool
 
     def asMaster(): Unit = {
         out(en, we, addr, wdata)
-        in(rdata, do_store_base, do_store_ext)
+        in(rdata, wready, rvalid)
     }
 }
 
@@ -87,9 +87,9 @@ class MyCPU(val config: CoreConfig) extends Component{
         val bridge = new Bridge()
         val extSramCtrl = new ExtSramCtrl()
         bridge.io.dBus <> LSUPlugin.data
-        bridge.io.instSram <> baseSramCtrl.io.instSram
+        bridge.io.toBaseCtrl <> baseSramCtrl.io.fromBridgeBase
 
-        bridge.io.dataSram  <> extSramCtrl.io.dataSram
+        bridge.io.toExtCtrl  <> extSramCtrl.io.fromBridgeExt
         extSramCtrl.io.extSram <> io.extSram
         bridge.io.conf <> io.conf
     }

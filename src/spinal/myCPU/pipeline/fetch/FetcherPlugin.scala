@@ -24,6 +24,7 @@ class FetcherPlugin extends Plugin[Core]{
             instBundle.addr := arbitration.isStuck ? output(fetchSignals.PC).asBits | output(fetchSignals.NPC).asBits
             insert(fetchSignals.INST) := (!arbitration.isFlushed) ? instBundle.rdata | B(0, 32 bits)
             arbitration.flushIt setWhen(instBundle.addr === PC_INIT)
+            arbitration.haltItself setWhen(!instBundle.rvalid && arbitration.isValid)
         }
 
         // IF2 plug new Area{
