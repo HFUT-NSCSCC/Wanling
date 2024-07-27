@@ -17,10 +17,11 @@ case class InstBundle() extends Bundle with IMasterSlave{
     val addr = (Bits(32 bits))
     val rdata = (Bits(32 bits))
     val rvalid = Bool
+    val rresp = Bool
     
     def asMaster(): Unit = {
         out(en, addr)
-        in(rdata, rvalid)
+        in(rdata, rvalid, rresp)
     }
 }
 
@@ -31,11 +32,12 @@ case class DataBundle() extends Bundle with IMasterSlave{
     val wdata = (Bits(32 bits))
     val rdata = (Bits(32 bits))
     val rvalid = Bool
+    val rresp = Bool
     val wready = Bool
 
     def asMaster(): Unit = {
         out(en, we, addr, wdata)
-        in(rdata, wready, rvalid)
+        in(rdata, wready, rvalid, rresp)
     }
 }
 

@@ -52,7 +52,8 @@ class ExtSramCtrl extends Component{
         val READ = new State
         val WRITE = new State
         io.fromBridgeExt.wready := True
-        io.fromBridgeExt.rready := True
+        io.fromBridgeExt.rvalid := True
+        io.fromBridgeExt.rresp := False
 
         IDLE
             .onEntry{
@@ -84,6 +85,7 @@ class ExtSramCtrl extends Component{
             .whenIsActive{
                 counter := counter + 1
                 when(counter === U(CYCLES_TO_READ - 1)){
+                    io.fromBridgeExt.rresp := True
                     when(io.fromBridgeExt.en){
                         when(io.fromBridgeExt.we.orR){
                             goto(WRITE)
@@ -101,7 +103,7 @@ class ExtSramCtrl extends Component{
                     }
                 } otherwise {
                     io.fromBridgeExt.wready := False
-                    io.fromBridgeExt.rready := False
+                    io.fromBridgeExt.rvalid := False
                 }
             }
 
@@ -136,7 +138,7 @@ class ExtSramCtrl extends Component{
                     }
                 } otherwise {
                     io.fromBridgeExt.wready := False
-                    io.fromBridgeExt.rready := False
+                    io.fromBridgeExt.rvalid := False
                 }
             }
             .onExit{
@@ -177,8 +179,10 @@ class BaseSramCtrl extends Component{
         val READ = new State
         val WRITE = new State
         io.fromBridgeBase.wready := True
-        io.fromBridgeBase.rready := True
+        io.fromBridgeBase.rvalid := True
+        io.fromBridgeBase.rresp := False
         io.instBundle.rvalid := True
+        io.instBundle.rresp := False
         
         // io.instBundle.rdata := (io.baseSram.oe_n || stateReg =/= FETCH.refOwner) ? inst | io.baseSram.data
         val doInstFetch = RegInit(False)
@@ -199,7 +203,9 @@ class BaseSramCtrl extends Component{
                     inst := io.baseSram.data
                 }
                 when(counter === U(CYCLES_TO_READ - 1)) {
+                    io.instBundle.rresp := True
                     when(io.fromBridgeBase.en){
+                        io.instBundle.rvalid := False
                         when(io.fromBridgeBase.we.orR){
                             goto(WRITE)
                         } otherwise {
@@ -214,6 +220,10 @@ class BaseSramCtrl extends Component{
                         baseSram_r.we_n := True
                         goto(FETCH)
                     }
+                } otherwise {
+                    io.fromBridgeBase.wready := False
+                    io.fromBridgeBase.rvalid := False
+                    io.instBundle.rvalid := False
                 }
             }
 
@@ -230,7 +240,9 @@ class BaseSramCtrl extends Component{
                 io.instBundle.rdata := inst
                 counter := counter + 1
                 when(counter === U(CYCLES_TO_READ - 1)) {
+                    io.fromBridgeBase.rresp := True
                     when(io.fromBridgeBase.en){
+                        io.instBundle.rvalid := False
                         when(io.fromBridgeBase.we.orR){
                             goto(WRITE)
                         } otherwise {
@@ -247,7 +259,7 @@ class BaseSramCtrl extends Component{
                     }
                 } otherwise {
                     io.fromBridgeBase.wready := False
-                    io.fromBridgeBase.rready := False
+                    io.fromBridgeBase.rvalid := False
                     io.instBundle.rvalid := False
                 }
             }
@@ -266,7 +278,8 @@ class BaseSramCtrl extends Component{
                 counter := counter + 1
                 io.instBundle.rdata := inst
                 when(counter === U(CYCLES_TO_WRITE - 1)) {
-                    when(io.fromBridgeBase.en || io.instBundle.en){
+                    when(io.fromBridgeBase.en){
+                        io.instBundle.rvalid := False
                         when(io.fromBridgeBase.we.orR){
                             counter := 0
                             baseSram_r.data := io.fromBridgeBase.wdata
@@ -284,7 +297,7 @@ class BaseSramCtrl extends Component{
                     }
                 } otherwise {
                     io.fromBridgeBase.wready := False
-                    io.fromBridgeBase.rready := False
+                    io.fromBridgeBase.rvalid := False
                     io.instBundle.rvalid := False
                 }
             }

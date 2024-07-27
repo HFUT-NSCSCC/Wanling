@@ -11,12 +11,13 @@ case class BusBundle(targetName: String) extends Bundle with IMasterSlave{
     val addr = Bits(32 bits)
     val wdata = Bits(32 bits)
     val rdata = Bits(32 bits)
-    val rready = Bool
+    val rvalid = Bool
+    val rresp = Bool
     val wready = Bool
 
     def asMaster(): Unit = {
         out(en, we, addr, wdata)
-        in(rdata, wready, rready)
+        in(rdata, wready, rvalid, rresp)
     }
 }
 
@@ -38,9 +39,9 @@ class Bridge extends Component{
     val sel_ext = (io.dBus.addr & BridgeConf.ADDR_MASK) === BridgeConf.ADDR_EXT
     val sel_conf = !sel_base && !sel_ext
 
-    val sel_base_r = RegNext(sel_base, init = False)
-    val sel_ext_r  = RegNext(sel_ext, init = False)
-    val sel_conf_r = RegNext(sel_conf, init = False)
+    val sel_base_r = RegNextWhen(sel_base, io.dBus.en, init = True)
+    val sel_ext_r  = RegNextWhen(sel_ext, io.dBus.en, init = True)
+    val sel_conf_r = RegNextWhen(sel_conf, io.dBus.en, init = True)
 
     io.toBaseCtrl.en := io.dBus.en & sel_base
     io.toBaseCtrl.we := (io.toBaseCtrl.en #* 4) & io.dBus.we
@@ -62,5 +63,6 @@ class Bridge extends Component{
                      ((sel_conf_r #* 32) & io.conf.rdata)
 
     io.dBus.wready := (sel_base && io.toBaseCtrl.wready) || (sel_ext && io.toExtCtrl.wready) || (sel_conf && io.conf.wready)
-    io.dBus.rvalid := (sel_base && io.toBaseCtrl.rready) || (sel_ext && io.toExtCtrl.rready) || (sel_conf && io.conf.rready)
+    io.dBus.rvalid := (sel_base && io.toBaseCtrl.rvalid) || (sel_ext && io.toExtCtrl.rvalid) || (sel_conf && io.conf.rvalid)
+    io.dBus.rresp  := (sel_base_r && io.toBaseCtrl.rvalid) || (sel_ext_r && io.toExtCtrl.rvalid) || (sel_conf_r && io.conf.rvalid)
 }

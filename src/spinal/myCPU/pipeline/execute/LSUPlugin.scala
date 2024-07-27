@@ -49,7 +49,7 @@ class LSUPlugin extends Plugin[Core]{
             arbitration.haltItself setWhen(
                 ((!data.rvalid) && lsuSignals.MEM_READ.orR && arbitration.isValid))
             // 暂停前端指令供应, 避免访存与取指争抢且导致取指认为取到了指令 (优先访存)
-            ISS.arbitration.haltItself setWhen((memSignals.MEM_EN && !memSignals.MEM_ADDR(22) && arbitration.isValid))
+            // ISS.arbitration.haltItself setWhen((memSignals.MEM_EN && !memSignals.MEM_ADDR(22) && arbitration.isValid))
             data.en := memSignals.MEM_EN && arbitration.notStuck
             data.addr := memSignals.MEM_ADDR
             data.wdata := memSignals.MEM_WDATA
@@ -68,6 +68,7 @@ class LSUPlugin extends Plugin[Core]{
             // memory read
             val rawData = data.rdata
             val rdata_ext = Bits(32 bits)
+            arbitration.haltItself setWhen(lsuSignals.MEM_READ.orR && !data.rresp)
             switch(memSignals.MEM_MASK){
                 is(B"0001"){
                     rdata_ext := Mux(lsuSignals.MEM_READ_UE, 
@@ -104,9 +105,6 @@ class LSUPlugin extends Plugin[Core]{
                 }
             }
             insert(writeSignals.MEM_RDATA_WB) := rdata_ext
-            
-            
-            
         }
     }
 }

@@ -21,17 +21,21 @@ class FetcherPlugin extends Plugin[Core]{
             import IF1._
             instBundle.en := arbitration.isValid
             // stuck 时候 npc 就应该是当前的 pc
-            instBundle.addr := arbitration.isStuck ? output(fetchSignals.PC).asBits | output(fetchSignals.NPC).asBits
-            insert(fetchSignals.INST) := (!arbitration.isFlushed) ? instBundle.rdata | B(0, 32 bits)
-            arbitration.flushIt setWhen(instBundle.addr === PC_INIT)
+            val pcBeforeStuck = RegNextWhen[UInt](output(fetchSignals.PC), !arbitration.isStuck, init = PC_INIT)
+
+            instBundle.addr := arbitration.isStuck ? pcBeforeStuck.asBits | output(fetchSignals.PC).asBits
+            // instBundle.addr := output(fetchSignals.PC).asBits
+            // arbitration.flushIt setWhen(instBundle.addr === PC_INIT)
             arbitration.haltItself setWhen(!instBundle.rvalid && arbitration.isValid)
         }
+        
+        IF2 plug new Area{
+            import IF2._
+            arbitration.haltItself setWhen(!instBundle.rresp && arbitration.isValid)
+            val inst = RegNextWhen[Bits](instBundle.rdata, instBundle.rresp, init = 0)
+            insert(fetchSignals.INST) := (instBundle.rresp) ? instBundle.rdata | inst
 
-        // IF2 plug new Area{
-        //     // import IF2._
-        //     // val inst = RegNextWhen[Bits](instBundle.rdata, !arbitration.isStuck, init = 0)
-
-        // }
+        }
 
     }
   
