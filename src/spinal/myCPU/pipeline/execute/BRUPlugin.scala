@@ -6,6 +6,7 @@ import spinal.core._
 import spinal.lib._
 import myCPU.pipeline.fetch.PCManagerPlugin
 import _root_.myCPU.constants._
+import myCPU.pipeline.fetch.FetcherPlugin
 
 class BRUPlugin extends Plugin[Core]{
     override def setup(pipeline: Core): Unit = {
@@ -67,10 +68,13 @@ class BRUPlugin extends Plugin[Core]{
             val redirect = (jump ^ preJump) && arbitration.isValidNotStuck
             pcManager.redirect := redirect
             pcManager.redirectTarget := Mux(jump, branchTarget, input(fetchSignals.PC) + U(4))
-            arbitration.flushNext setWhen(redirect)
-                            
+            
             // pcManager.jump := jump
             // pcManager.jumpTarget := branchTarget
+            val fetcher = service(classOf[FetcherPlugin])
+            arbitration.flushNext setWhen(redirect)
+            // arbitration.haltItself setWhen(!fetcher.branchable && arbitration.isValid)
+            
             // arbitration.flushNext setWhen(jump)
         }
     }

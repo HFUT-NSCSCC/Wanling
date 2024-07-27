@@ -66,9 +66,16 @@ class LSUPlugin extends Plugin[Core]{
             val memSignals = input(exeSignals.memSignals)
             val lsuSignals = input(exeSignals.lsuSignals)
             // memory read
-            val rawData = data.rdata
-            val rdata_ext = Bits(32 bits)
             arbitration.haltItself setWhen(lsuSignals.MEM_READ.orR && !data.rresp)
+            insert(writeSignals.MEM_RDATA_WB_RAW) := data.rdata
+        }
+        
+        EXE3 plug new Area{
+            import EXE3._
+            val memSignals = input(exeSignals.memSignals)
+            val lsuSignals = input(exeSignals.lsuSignals)
+            val rawData = input(writeSignals.MEM_RDATA_WB_RAW)
+            val rdata_ext = Bits(32 bits)
             switch(memSignals.MEM_MASK){
                 is(B"0001"){
                     rdata_ext := Mux(lsuSignals.MEM_READ_UE, 

@@ -6,7 +6,7 @@ import spinal.core.binarySequential
 import spinal.core.SpinalEnumElement
 
 object ForwardType extends SpinalEnum(binarySequential){
-    val FROMEXE1, FROMEXE2, FROMWB = newElement()
+    val FROMEXE1, FROMEXE2, FROMEXE3, FROMWB = newElement()
     val FROMREG = newElement()
   
 }

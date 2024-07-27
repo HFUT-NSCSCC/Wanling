@@ -9,6 +9,7 @@ import myCPU.core.LA32R.PC_INIT
 
 class FetcherPlugin extends Plugin[Core]{
     val instBundle = master(InstBundle())
+    val branchable = Bool
     override def setup(pipeline: Core): Unit = {
 
     }
@@ -27,6 +28,7 @@ class FetcherPlugin extends Plugin[Core]{
             // instBundle.addr := output(fetchSignals.PC).asBits
             // arbitration.flushIt setWhen(instBundle.addr === PC_INIT)
             arbitration.haltItself setWhen(!instBundle.rvalid && arbitration.isValid)
+            branchable := instBundle.rvalid
         }
         
         IF2 plug new Area{

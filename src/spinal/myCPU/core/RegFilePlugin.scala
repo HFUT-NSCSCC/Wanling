@@ -25,6 +25,7 @@ class RegFilePlugin extends Plugin[Core]{
 
     val fromEXE1 = Bits(DataWidth bits)
     val fromEXE2 = Bits(DataWidth bits)
+    val fromEXE3 = Bits(DataWidth bits)
     val fromWB = Bits(DataWidth bits)
 
     val src1Addr = UInt(RegAddrWidth bits)
@@ -75,6 +76,20 @@ class RegFilePlugin extends Plugin[Core]{
                     fromEXE2 := 0
                 }
             }
+            switch(EXE3.output(writeSignals.FUType_WB)) {
+                is(FuType.ALU) {
+                    fromEXE3 := EXE3.output(writeSignals.ALU_RESULT_WB)
+                }
+                is(FuType.BRU) {
+                    fromEXE3 := (EXE3.output(fetchSignals.PC) + U(4)).asBits
+                }
+                is(FuType.LSU) {
+                    fromEXE3 := EXE3.output(writeSignals.MEM_RDATA_WB)
+                }
+                is(FuType.MUL) {
+                    fromEXE3 := EXE3.output(writeSignals.MUL_RESULT_WB)
+                }
+            }
             fromWB := wdata
 
             val rs1BypassNetwork = new BypassNetwork()
@@ -82,12 +97,15 @@ class RegFilePlugin extends Plugin[Core]{
             rs1BypassNetwork.io.rsISS <> src1Addr.asBits
             rs1BypassNetwork.io.rdEXE1 <> EXE1.input(writeSignals.REG_WRITE_ADDR_WB)
             rs1BypassNetwork.io.rdEXE2 <> EXE2.input(writeSignals.REG_WRITE_ADDR_WB)
+            rs1BypassNetwork.io.rdEXE3 <> EXE3.input(writeSignals.REG_WRITE_ADDR_WB)
             rs1BypassNetwork.io.rdWB   <> waddr
             rs1BypassNetwork.io.fuTypeEXE1 <> EXE1.input(writeSignals.FUType_WB)
             rs1BypassNetwork.io.fuTypeEXE2 <> EXE2.input(writeSignals.FUType_WB)
+            rs1BypassNetwork.io.fuTypeEXE3 <> EXE3.input(writeSignals.FUType_WB)
             rs1BypassNetwork.io.fuTypeWB <> WB.input(writeSignals.FUType_WB)
             rs1BypassNetwork.io.regWriteValidEXE1 := EXE1.input(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
             rs1BypassNetwork.io.regWriteValidEXE2 := EXE2.input(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
+            rs1BypassNetwork.io.regWriteValidEXE3 := EXE3.input(writeSignals.REG_WRITE_VALID_WB) & EXE3.arbitration.isValidNotStuck
             rs1BypassNetwork.io.regWriteValidWB   <> wvalid
             rs1BypassNetwork.io.rsForwardType     <> rs1ForwardType
             rs1BypassNetwork.io.forwardable       <> rs1Forwardable
@@ -95,12 +113,15 @@ class RegFilePlugin extends Plugin[Core]{
             rs2BypassNetwork.io.rsISS <> src2Addr.asBits
             rs2BypassNetwork.io.rdEXE1 <> EXE1.input(writeSignals.REG_WRITE_ADDR_WB)
             rs2BypassNetwork.io.rdEXE2 <> EXE2.input(writeSignals.REG_WRITE_ADDR_WB)
+            rs2BypassNetwork.io.rdEXE3 <> EXE3.input(writeSignals.REG_WRITE_ADDR_WB)
             rs2BypassNetwork.io.rdWB   <> waddr
             rs2BypassNetwork.io.fuTypeEXE1 <> EXE1.input(writeSignals.FUType_WB)
             rs2BypassNetwork.io.fuTypeEXE2 <> EXE2.input(writeSignals.FUType_WB)
+            rs2BypassNetwork.io.fuTypeEXE3 <> EXE3.input(writeSignals.FUType_WB)
             rs2BypassNetwork.io.fuTypeWB <> WB.input(writeSignals.FUType_WB)
             rs2BypassNetwork.io.regWriteValidEXE1 := EXE1.input(writeSignals.REG_WRITE_VALID_WB) & EXE1.arbitration.isValidNotStuck
             rs2BypassNetwork.io.regWriteValidEXE2 := EXE2.input(writeSignals.REG_WRITE_VALID_WB) & EXE2.arbitration.isValidNotStuck
+            rs2BypassNetwork.io.regWriteValidEXE3 := EXE3.input(writeSignals.REG_WRITE_VALID_WB) & EXE3.arbitration.isValidNotStuck
             rs2BypassNetwork.io.regWriteValidWB   <> wvalid
             rs2BypassNetwork.io.rsForwardType     <> rs2ForwardType
             rs2BypassNetwork.io.forwardable       <> rs2Forwardable
@@ -126,6 +147,9 @@ class RegFilePlugin extends Plugin[Core]{
                 is(ForwardType.FROMEXE2.asBits) {
                     src1Data := fromEXE2
                 }
+                is(ForwardType.FROMEXE3.asBits) {
+                    src1Data := fromEXE3
+                }
                 is(ForwardType.FROMWB.asBits) {
                     src1Data := wdata
                 }
@@ -140,6 +164,9 @@ class RegFilePlugin extends Plugin[Core]{
                 }
                 is(ForwardType.FROMEXE2.asBits) {
                     src2Data := fromEXE2
+                }
+                is(ForwardType.FROMEXE3.asBits) {
+                    src2Data := fromEXE3
                 }
                 is(ForwardType.FROMWB.asBits) {
                     src2Data := wdata

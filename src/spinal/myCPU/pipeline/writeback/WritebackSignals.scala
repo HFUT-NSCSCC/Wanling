@@ -12,6 +12,7 @@ final case class WritebackSignals(config: CoreConfig){
     object ALU_RESULT_WB extends Stageable(Bits(DataWidth bits))
     object MUL_RESULT_WB extends Stageable(Bits(DataWidth bits))
     object MEM_RDATA_WB extends Stageable(Bits(DataWidth bits))
+    object MEM_RDATA_WB_RAW extends Stageable(Bits(DataWidth bits))
     object REG_WRITE_VALID_WB extends Stageable(Bool)
     object REG_WRITE_ADDR_WB extends Stageable(Bits(RegAddrWidth bits))
     object REG_WRITE_DATA_WB extends Stageable(Bits(DataWidth bits))
