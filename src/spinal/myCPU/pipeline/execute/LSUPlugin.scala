@@ -34,7 +34,7 @@ class LSUPlugin extends Plugin[Core]{
 
             val memSignals = new MemSignals()
             memSignals.MEM_ADDR := vaddr.asBits & 0x7FFFFFFCL
-            memSignals.MEM_EN := (lsuSignals.MEM_READ.orR || lsuSignals.MEM_WRITE.orR) && !arbitration.isStuck
+            memSignals.MEM_EN := (lsuSignals.MEM_READ.orR || lsuSignals.MEM_WRITE.orR) && arbitration.isValid
             memSignals.MEM_WE := lsuSignals.MEM_WRITE & (arbitration.isValid #* 4)
             memSignals.MEM_WDATA := lsuSignals.SRC2
             memSignals.MEM_MASK := (lsuSignals.MEM_READ | lsuSignals.MEM_WRITE) |<< vaddr(1 downto 0)

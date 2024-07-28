@@ -73,7 +73,7 @@ class BRUPlugin extends Plugin[Core]{
             // pcManager.jumpTarget := branchTarget
             val fetcher = service(classOf[FetcherPlugin])
             arbitration.flushNext setWhen(redirect)
-            // arbitration.haltItself setWhen(!fetcher.branchable && redirect)
+            arbitration.haltItself setWhen(!fetcher.branchable && redirect)
             
             // arbitration.flushNext setWhen(jump)
         }
