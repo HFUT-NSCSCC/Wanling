@@ -42,9 +42,6 @@ class ICachePlugin extends Plugin[Core]{
         instBundle.en := False
         instBundle.addr := 0
 
-        val doRefetch = False
-        // val refetchValid = pipeline.IF1.arbitration.isValid && doRefetch
-
         val rPort = infoRAM.io.read
         
         IF1 plug new Area {
@@ -77,7 +74,7 @@ class ICachePlugin extends Plugin[Core]{
             insert(ICACHE_INFO) := rPort.rsp
             val idx = pc(icache.indexRange)
             val tag = pc(icache.tagRange)
-            val offset = pc(icache.offsetRange) |>> 2
+            val offset = pc(icache.wordOffsetRange)
             val setValids = input(ICACHE_VALIDS)
 
             val wPort = infoRAM.io.write.setIdle()
@@ -113,6 +110,10 @@ class ICachePlugin extends Plugin[Core]{
                 val count = Reg(UInt(log2Up(icache.lineWords) bits)) init(0)
                 val replaceWay = input(ICACHE_INFO).lru.asUInt
 
+                when(count === offset) {
+                    inst2Fire := instBundle.rdata
+                }
+                
                 stateBoot.whenIsActive {
                     when(arbitration.isValid && !hit){
                         arbitration.haltItself.set()
@@ -135,10 +136,6 @@ class ICachePlugin extends Plugin[Core]{
                         dataWs(replaceWay).payload.address := idx
                         dataWs(replaceWay).payload.data.foreach(_ := instBundle.rdata)
                         dataMasks(replaceWay)(count).setAll()
-                        when(count === offset) {
-                            inst2Fire := instBundle.rdata
-                        }
-                        // count.increment()
                         count := count + 1
                     }
                     when(instBundle.rvalid) {
@@ -160,9 +157,7 @@ class ICachePlugin extends Plugin[Core]{
                         dataWs(replaceWay).payload.address := idx
                         dataWs(replaceWay).payload.data.foreach(_ := instBundle.rdata)
                         dataMasks(replaceWay)(count).setAll()
-                        when(count === offset) {
-                            inst2Fire := instBundle.rdata
-                        }
+
                         val newInfo = input(ICACHE_INFO).copy()
                         newInfo.tags := input(ICACHE_INFO).tags
                         newInfo.tags(replaceWay) := tag
@@ -177,7 +172,6 @@ class ICachePlugin extends Plugin[Core]{
 
                 FINISH.whenIsActive{
                     when(!arbitration.isStuck){
-                        doRefetch := !IF1.arbitration.isFlushed
                         insert(fetchSignals.INST) := inst2Fire
                         goto(stateBoot)
                     }
