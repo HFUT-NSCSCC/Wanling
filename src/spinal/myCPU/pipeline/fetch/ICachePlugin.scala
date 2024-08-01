@@ -136,10 +136,10 @@ class ICachePlugin extends Plugin[Core]{
                         dataWs(replaceWay).payload.address := idx
                         dataWs(replaceWay).payload.data.foreach(_ := instBundle.rdata)
                         dataMasks(replaceWay)(count).setAll()
-                        count := count + 1
                     }
                     when(instBundle.rvalid) {
                         instBundle.en := True
+                        count := count + 1
                         instBundle.addr := (pc(31 downto icache.offsetWidth) @@ U(0, icache.offsetWidth bits) + ((count + 1) << 2)).asBits
                         when(count === (icache.lineWords - 2)){
                             goto(COMMIT)
