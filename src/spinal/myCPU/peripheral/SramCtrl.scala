@@ -204,6 +204,7 @@ class BaseSramCtrl extends Component{
                 }
                 when(counter === U(CYCLES_TO_READ - 1)) {
                     io.instBundle.rresp := True
+                    // 如果lsu发起访存请求, 则优先访存
                     when(io.fromBridgeBase.en){
                         when(io.fromBridgeBase.we.orR){
                             goto(WRITE)
@@ -231,8 +232,8 @@ class BaseSramCtrl extends Component{
                 counter := 0
                 baseSram_r.addr := io.fromBridgeBase.addr(21 downto 2)
                 baseSram_r.be_n := B"0000"
-                baseSram_r.ce_n := ~io.fromBridgeBase.en & ~io.instBundle.en
-                baseSram_r.oe_n := (~(io.fromBridgeBase.en & ~(io.fromBridgeBase.we.orR))) & (~(io.instBundle.en & True))
+                baseSram_r.ce_n := ~io.fromBridgeBase.en
+                baseSram_r.oe_n := (~(io.fromBridgeBase.en & ~(io.fromBridgeBase.we.orR)))
                 baseSram_r.we_n := True
             }
             .whenIsActive{
@@ -247,8 +248,8 @@ class BaseSramCtrl extends Component{
                             counter := 0
                             baseSram_r.addr := io.fromBridgeBase.addr(21 downto 2)
                             baseSram_r.be_n := B"0000"
-                            baseSram_r.ce_n := ~io.fromBridgeBase.en & ~io.instBundle.en
-                            baseSram_r.oe_n := (~(io.fromBridgeBase.en & ~(io.fromBridgeBase.we.orR))) & (~(io.instBundle.en & True))
+                            baseSram_r.ce_n := ~io.fromBridgeBase.en
+                            baseSram_r.oe_n := (~(io.fromBridgeBase.en & ~(io.fromBridgeBase.we.orR)))
                             baseSram_r.we_n := True
                             goto(READ)
                         }

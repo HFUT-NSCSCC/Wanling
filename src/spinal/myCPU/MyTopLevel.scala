@@ -5,7 +5,7 @@ import myCPU.core.Core
 import myCPU.core.CoreConfig
 
 object MyTopLevelVerilog extends App {
-  Config.spinal.generateVerilog(new MyCPU(CoreConfig()))
+  Config.spinal.withoutEnumString().generateVerilog(new MyCPU(CoreConfig()))
 }
 
 object MyTopLevelVhdl extends App {

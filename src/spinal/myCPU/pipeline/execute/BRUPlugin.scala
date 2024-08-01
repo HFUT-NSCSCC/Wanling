@@ -100,8 +100,8 @@ class BRUPlugin extends Plugin[Core]{
             pcManager.redirect := redirect
             pcManager.redirectTarget := Mux(jump, branchTarget, input(fetchSignals.PC) + U(4))
             
-            val fetcher = service(classOf[ICachePlugin])
             // val fetcher = service(classOf[FetcherPlugin])
+            val fetcher = service(classOf[ICachePlugin])
             arbitration.flushNext setWhen(redirect)
             arbitration.haltItself setWhen(!fetcher.branchable && redirect)
         }

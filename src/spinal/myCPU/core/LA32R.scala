@@ -20,6 +20,8 @@ object LA32R {
     def rkRange = 14 downto 10
     def raRange = 19 downto 15
 
+    // def useCache = true
+
     private def MM(mask: String): MaskedLiteral = {
         val replace_mask = mask.replace(" ", "")
         assert(replace_mask.length == 32)
