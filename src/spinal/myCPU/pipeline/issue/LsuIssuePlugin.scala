@@ -18,9 +18,10 @@ class LsuIssuePlugin extends Plugin[Core]{
             import ISS._
 
             val lsuSignals = new LSUSignals()
-            lsuSignals.SRC1 := output(decodeSignals.SRC1)
+            // lsuSignals.SRC1 := output(decodeSignals.SRC1)
             lsuSignals.SRC2 := output(decodeSignals.SRC2)
-            lsuSignals.IMM := input(decodeSignals.IMM)
+            // lsuSignals.IMM := input(decodeSignals.IMM)
+            lsuSignals.VADDR := input(decodeSignals.SRC1).asUInt + input(decodeSignals.IMM).asUInt
             lsuSignals.MEM_READ := input(decodeSignals.MEM_READ) & (arbitration.isValid #* 4)
             lsuSignals.MEM_READ_UE := input(decodeSignals.MEM_READ_UE)
             lsuSignals.MEM_WRITE := input(decodeSignals.MEM_WRITE) & (arbitration.isValid #* 4)

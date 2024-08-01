@@ -80,9 +80,11 @@ class MyCPU(val config: CoreConfig) extends Component{
         // io.debug.wdata := regFile.debug.wdata
         // io.debug <> regFile.debug
 
-        val fetcherPlugin = cpu.service(classOf[FetcherPlugin])
         val baseSramCtrl = new BaseSramCtrl()
-        baseSramCtrl.io.instBundle <> fetcherPlugin.instBundle
+        // val fetcherPlugin = cpu.service(classOf[FetcherPlugin])
+        // baseSramCtrl.io.instBundle <> fetcherPlugin.instBundle
+        val icachePlugin = cpu.service(classOf[ICachePlugin])
+        baseSramCtrl.io.instBundle <> icachePlugin.instBundle
         baseSramCtrl.io.baseSram <> io.baseSram
 
         val LSUPlugin = cpu.service(classOf[LSUPlugin])

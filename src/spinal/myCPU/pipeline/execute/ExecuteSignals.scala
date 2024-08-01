@@ -50,6 +50,7 @@ final case class LSUSignals() extends Bundle {
     val SRC1 = Bits(DataWidth bits)
     val SRC2 = Bits(DataWidth bits)
     val IMM = Bits(DataWidth bits)
+    val VADDR = UInt(DataWidth bits)
     val MEM_READ = Bits(4 bits)
     val MEM_READ_UE = Bool
     val MEM_WRITE = Bits(4 bits)

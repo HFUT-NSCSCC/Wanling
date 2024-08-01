@@ -20,6 +20,7 @@ import _root_.myCPU.pipeline.fetch.FetcherPlugin
 import myCPU.pipeline.decode.ScoreBoardPlugin
 import _root_.myCPU.pipeline.issue.IssuePlugin
 import myCPU.pipeline.execute.MulPlugin
+import _root_.myCPU.pipeline.fetch.ICachePlugin
 
 case class CoreConfig(){
     // object PC extends Stageable(Bits(PCWidth bits))
@@ -106,7 +107,8 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
     plugins ++= List(
         new RegFilePlugin,
         new PCManagerPlugin,
-        new FetcherPlugin,
+        // new FetcherPlugin,
+        new ICachePlugin,
         new DecoderPlugin,
         new ScoreBoardPlugin,
         new IssuePlugin,

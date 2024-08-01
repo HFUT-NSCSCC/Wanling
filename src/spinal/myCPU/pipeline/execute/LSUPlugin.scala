@@ -28,9 +28,9 @@ class LSUPlugin extends Plugin[Core]{
 
             val lsuSignals = input(exeSignals.lsuSignals)
 
-            val src1 = lsuSignals.SRC1.asUInt //rj
-            val imm = lsuSignals.IMM.asUInt // imm
-            val vaddr = src1 + imm
+            // val src1 = input(decodeSignals.SRC1).asUInt //rj
+            // val imm = input(decodeSignals.IMM).asUInt // imm
+            val vaddr = lsuSignals.VADDR
 
             val memSignals = new MemSignals()
             memSignals.MEM_ADDR := vaddr.asBits & 0x7FFFFFFCL
@@ -42,9 +42,10 @@ class LSUPlugin extends Plugin[Core]{
             // 发起读写请求
             // 连续的写入需要等待上一个数据写入完成
             arbitration.haltItself setWhen(
-                ((!data.wready) && lsuSignals.MEM_WRITE.orR && arbitration.isValid))
-            arbitration.haltItself setWhen(
+                ((!data.wready) && lsuSignals.MEM_WRITE.orR && arbitration.isValid) || 
                 ((!data.rvalid) && lsuSignals.MEM_READ.orR && arbitration.isValid))
+            // arbitration.haltItself setWhen(
+            //     ((!data.rvalid) && lsuSignals.MEM_READ.orR && arbitration.isValid))
             // 暂停前端指令供应, 避免访存与取指争抢且导致取指认为取到了指令 (优先访存)
             // ISS.arbitration.haltItself setWhen((memSignals.MEM_EN && !memSignals.MEM_ADDR(22) && arbitration.isValid))
             data.en := memSignals.MEM_EN

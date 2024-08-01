@@ -65,23 +65,23 @@ class PCManagerPlugin extends Plugin[Core]{
 
         }
         
-        IF2 plug new Area{
-            import IF2._
-            val inst = input(fetchSignals.INST)
-            val isBranch = inst(31 downto 30) === B"01" && inst(29 downto 26) =/= B"0011"
-            val immType = Mux(inst(29 downto 27) === B"010", ImmExtType.SI26, ImmExtType.SI16)
-            val immExtForBranch = ImmExtForBranch()
-            immExtForBranch.io.inst := inst
-            immExtForBranch.io.immType := immType
-            val imm = immExtForBranch.io.imm.asUInt
+        // IF2 plug new Area{
+        //     import IF2._
+        //     val inst = input(fetchSignals.INST)
+        //     val isBranch = inst(31 downto 30) === B"01" && inst(29 downto 26) =/= B"0011"
+        //     val immType = Mux(inst(29 downto 27) === B"010", ImmExtType.SI26, ImmExtType.SI16)
+        //     val immExtForBranch = ImmExtForBranch()
+        //     immExtForBranch.io.inst := inst
+        //     immExtForBranch.io.immType := immType
+        //     val imm = immExtForBranch.io.imm.asUInt
 
-            preJump := isBranch && imm.msb && arbitration.isValidNotStuck
-            predictTarget := input(fetchSignals.PC) + imm
+        //     preJump := isBranch && imm.msb && arbitration.isValidNotStuck
+        //     predictTarget := input(fetchSignals.PC) + imm
 
-            arbitration.flushNext setWhen(preJump)
+        //     arbitration.flushNext setWhen(preJump)
             
-            insert(fetchSignals.PREJUMP) := preJump
-        }
+        //     insert(fetchSignals.PREJUMP) := preJump
+        // }
 
     }
   
