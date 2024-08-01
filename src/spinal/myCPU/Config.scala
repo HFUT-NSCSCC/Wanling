@@ -30,7 +30,7 @@ abstract class CacheBasicConfig {
 
 final case class ICacheConfig(
   sets: Int = 64,
-  lineSize: Int = 16,
+  lineSize: Int = 64,
   ways: Int = 2,
 ) extends CacheBasicConfig {
   val enable = true
