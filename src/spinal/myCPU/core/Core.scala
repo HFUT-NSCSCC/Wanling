@@ -17,7 +17,7 @@ import _root_.myCPU.pipeline.issue.IntIssuePlugin
 import myCPU.pipeline.issue.BruIssuePlugin
 import myCPU.pipeline.issue.LsuIssuePlugin
 import _root_.myCPU.pipeline.fetch.FetcherPlugin
-import myCPU.pipeline.decode.ScoreBoardPlugin
+import myCPU.pipeline.issue.ScoreBoardPlugin
 import _root_.myCPU.pipeline.issue.IssuePlugin
 import myCPU.pipeline.execute.MulPlugin
 import _root_.myCPU.pipeline.fetch.ICachePlugin

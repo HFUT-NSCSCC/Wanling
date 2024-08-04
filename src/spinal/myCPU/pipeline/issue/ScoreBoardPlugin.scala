@@ -1,4 +1,4 @@
-package myCPU.pipeline.decode
+package myCPU.pipeline.issue
 
 import _root_.myCPU.builder.Plugin
 import myCPU.core.Core
@@ -43,18 +43,21 @@ class ScoreBoardPlugin extends Plugin[Core]{
                         && (input(decodeSignals.SRC2_FROM) === OpSrc.REG) && !regfile.rs2Forwardable) ))
         }
 
-        EXE2 plug new Area{
-            import EXE2._
-            val regWriteAddrEXE2 = input(decodeSignals.REG_WRITE_ADDR).asUInt
+        EXE3 plug new Area{
+            import EXE3._
+            val regWriteAddrEXE3 = input(decodeSignals.REG_WRITE_ADDR).asUInt
+            val regWriteAddrEXE2 = EXE2.input(decodeSignals.REG_WRITE_ADDR).asUInt
             val regWriteAddrEXE1 = EXE1.input(decodeSignals.REG_WRITE_ADDR).asUInt
-            val regWriteValidEXE2 = input(decodeSignals.REG_WRITE_VALID)
+            val regWriteValidEXE3 = input(decodeSignals.REG_WRITE_VALID)
+            val regWriteValidEXE2 = EXE2.input(decodeSignals.REG_WRITE_VALID)
             val regWriteValidEXE1 = EXE1.input(decodeSignals.REG_WRITE_VALID)
             // exe2 与 exe1 写入的目标不一致, 才可以清除
-            val clrValid = (regWriteValidEXE2 && regWriteAddrEXE2 =/= 0 && arbitration.isValidNotStuck) &&
-                            ((regWriteValidEXE1 ^ regWriteValidEXE2) || (regWriteAddrEXE1 =/= regWriteAddrEXE2))
-            // val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddrEXE2 =/= 0 && arbitration.isValidNotStuck
-            when(clrValid && !(setScoreboard.setValid && setScoreboard.regWriteAddr === regWriteAddrEXE2)){
-                scoreBoard(regWriteAddrEXE2) := False
+            val clrValid = (regWriteValidEXE3 && regWriteAddrEXE3 =/= 0 && arbitration.isValidNotStuck) &&
+                            ((regWriteValidEXE2 ^ regWriteValidEXE3) || (regWriteAddrEXE2 =/= regWriteAddrEXE3)) &&
+                            ((regWriteValidEXE1 ^ regWriteValidEXE3) || (regWriteAddrEXE1 =/= regWriteAddrEXE3))
+            // val clrValid = input(decodeSignals.REG_WRITE_VALID) && regWriteAddrEXE3 =/= 0 && arbitration.isValidNotStuck
+            when(clrValid && !(setScoreboard.setValid && setScoreboard.regWriteAddr === regWriteAddrEXE3)){
+                scoreBoard(regWriteAddrEXE3) := False
             }
         }
     }
