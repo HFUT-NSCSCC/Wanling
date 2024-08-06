@@ -20,7 +20,7 @@ class RegFilePlugin extends Plugin[Core]{
     // val debug = out(new DebugBundle())
 
     val wvalid = Bool
-    val waddr = Bits(RegAddrWidth bits)
+    val waddr = UInt(RegAddrWidth bits)
     val wdata = Bits(DataWidth bits)
 
     val fromEXE1 = Bits(DataWidth bits)
@@ -28,8 +28,8 @@ class RegFilePlugin extends Plugin[Core]{
     val fromEXE3 = Bits(DataWidth bits)
     val fromWB = Bits(DataWidth bits)
 
-    val src1Addr = UInt(RegAddrWidth bits)
-    val src2Addr = UInt(RegAddrWidth bits)
+    // val src1Addr = UInt(RegAddrWidth bits)
+    // val src2Addr = UInt(RegAddrWidth bits)
 
     val rs1Forwardable = Bool
     val rs1ForwardType = Bits(ForwardType().getBitsWidth bits)
@@ -94,7 +94,7 @@ class RegFilePlugin extends Plugin[Core]{
 
             val rs1BypassNetwork = new BypassNetwork()
             val rs2BypassNetwork = new BypassNetwork()
-            rs1BypassNetwork.io.rsISS <> src1Addr.asBits
+            // rs1BypassNetwork.io.rsISS <> src1Addr
             rs1BypassNetwork.io.rdEXE1 <> EXE1.input(writeSignals.REG_WRITE_ADDR_WB)
             rs1BypassNetwork.io.rdEXE2 <> EXE2.input(writeSignals.REG_WRITE_ADDR_WB)
             rs1BypassNetwork.io.rdEXE3 <> EXE3.input(writeSignals.REG_WRITE_ADDR_WB)
@@ -110,7 +110,7 @@ class RegFilePlugin extends Plugin[Core]{
             rs1BypassNetwork.io.rsForwardType     <> rs1ForwardType
             rs1BypassNetwork.io.forwardable       <> rs1Forwardable
 
-            rs2BypassNetwork.io.rsISS <> src2Addr.asBits
+            // rs2BypassNetwork.io.rsISS <> src2Addr
             rs2BypassNetwork.io.rdEXE1 <> EXE1.input(writeSignals.REG_WRITE_ADDR_WB)
             rs2BypassNetwork.io.rdEXE2 <> EXE2.input(writeSignals.REG_WRITE_ADDR_WB)
             rs2BypassNetwork.io.rdEXE3 <> EXE3.input(writeSignals.REG_WRITE_ADDR_WB)
@@ -128,13 +128,27 @@ class RegFilePlugin extends Plugin[Core]{
 
         }
 
+        ID plug new Area{
+            import ID._
+
+            val inst = input(fetchSignals.INST)
+            val fuType = output(decodeSignals.FUType)
+            val src1Addr = U(inst(LA32R.rjRange))
+            val src2Addr = (fuType === FuType.ALU || fuType === FuType.MUL) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
+            insert(decodeSignals.SRC1Addr) := src1Addr
+            insert(decodeSignals.SRC2Addr) := src2Addr
+            insert(decodeSignals.REG_WRITE_ADDR) := (output(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange).asUInt | U(1)
+        }
+
         ISS plug new Area{
             import ISS._
 
             val inst = input(fetchSignals.INST)
             val fuType = input(decodeSignals.FUType)
-            src1Addr := U(inst(LA32R.rjRange))
-            src2Addr := (fuType === FuType.ALU || fuType === FuType.MUL) ? U(inst(LA32R.rkRange)) | U(inst(LA32R.rdRange))
+            val src1Addr = input(decodeSignals.SRC1Addr)
+            val src2Addr = input(decodeSignals.SRC2Addr)
+            global.rs1BypassNetwork.io.rsISS <> src1Addr
+            global.rs2BypassNetwork.io.rsISS <> src2Addr
 
             // val src1Data = (wvalid && src1Addr.asBits === waddr && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src1Addr)
             // val src2Data = (wvalid && src2Addr.asBits === waddr && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src2Addr)
@@ -176,11 +190,11 @@ class RegFilePlugin extends Plugin[Core]{
                 }
             }
             
-            insert(decodeSignals.SRC1Addr) := src1Addr.asBits
-            insert(decodeSignals.SRC2Addr) := src2Addr.asBits
+            // insert(decodeSignals.SRC1Addr) := src1Addr
+            // insert(decodeSignals.SRC2Addr) := src2Addr
             insert(decodeSignals.SRC1) := (src1Addr === 0) ? B(0, 32 bits) | src1Data
             insert(decodeSignals.SRC2) := (src2Addr === 0) ? B(0, 32 bits) | src2Data
-            insert(decodeSignals.REG_WRITE_ADDR) := (input(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange) | B"5'h1"
+            // insert(decodeSignals.REG_WRITE_ADDR) := (input(decodeSignals.JUMPType) =/= JumpType.JBL) ? inst(LA32R.rdRange).asUInt | U(1)
             
         }
 
@@ -222,7 +236,7 @@ class RegFilePlugin extends Plugin[Core]{
             // debug.wdata := wdata
 
             regWritePort.valid := wvalid
-            regWritePort.address := U(waddr)
+            regWritePort.address := waddr
             regWritePort.data := wdata
         }
     }

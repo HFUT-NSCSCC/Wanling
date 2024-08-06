@@ -8,11 +8,11 @@ import myCPU.constants.FuType
 
 class BypassNetwork extends Component{
     val io = new Bundle{
-        val rsISS = in(Bits(RegAddrWidth bits))
-        val rdEXE1 = in(Bits(RegAddrWidth bits))
-        val rdEXE2 = in(Bits(RegAddrWidth bits))
-        val rdEXE3 = in(Bits(RegAddrWidth bits))
-        val rdWB   = in(Bits(RegAddrWidth bits))
+        val rsISS = in(UInt(RegAddrWidth bits))
+        val rdEXE1 = in(UInt(RegAddrWidth bits))
+        val rdEXE2 = in(UInt(RegAddrWidth bits))
+        val rdEXE3 = in(UInt(RegAddrWidth bits))
+        val rdWB   = in(UInt(RegAddrWidth bits))
         val fuTypeEXE1 = in(FuType)
         val fuTypeEXE2 = in(FuType)
         val fuTypeEXE3 = in(FuType)

@@ -14,8 +14,8 @@ class DecodeSignals(config: CoreConfig) {
     object JUMPType extends Stageable(JumpType())
 
     // ALU
-    object SRC1Addr extends Stageable(Bits(RegAddrWidth bits))
-    object SRC2Addr extends Stageable(Bits(RegAddrWidth bits))
+    object SRC1Addr extends Stageable(UInt(RegAddrWidth bits))
+    object SRC2Addr extends Stageable(UInt(RegAddrWidth bits))
     object SRC1 extends Stageable(Bits(DataWidth bits))
     object SRC2 extends Stageable(Bits(DataWidth bits))
     object ALUOp extends Stageable(ALUOpType())
@@ -33,7 +33,7 @@ class DecodeSignals(config: CoreConfig) {
     // object RA extends Stageable(Bits(32 bits))
     // object INST extends Stageable(Bits(InstWidth bits))
     object REG_WRITE_VALID extends Stageable(Bool)
-    object REG_WRITE_ADDR extends Stageable(Bits(RegAddrWidth bits))
+    object REG_WRITE_ADDR extends Stageable(UInt(RegAddrWidth bits))
     // object REG_WRITE_DATA extends Stageable(Bits(DataWidth bits))
 }
 

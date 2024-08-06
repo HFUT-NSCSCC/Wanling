@@ -80,8 +80,10 @@ class BRUPlugin extends Plugin[Core]{
             insert(BRANCH) := branch
             val imm = input(BRANCH_IMM)
             val jumpType = input(decodeSignals.JUMPType)
-            val opA = Mux(jumpType =/= JumpType.JIRL, input(fetchSignals.PC), src1)
-            val branchTarget = opA + imm
+            val relativeTarget = input(fetchSignals.PC) + imm
+            val absoluteTarget = src1
+            // val opA = Mux(jumpType =/= JumpType.JIRL, input(fetchSignals.PC), src1)
+            val branchTarget = Mux(jumpType =/= JumpType.JIRL, relativeTarget, absoluteTarget)
             insert(BRANCH_TARGET) := branchTarget
         }
 

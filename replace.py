@@ -8,8 +8,8 @@ pattern = r"""
 initial\s+begin
 \s+\$readmemb\("MyCPU\.v_toplevel_defaultClockArea_cpu_RegFilePlugin_regFile\.bin",RegFilePlugin_regFile\);
 \s+end
-\s+assign\s+RegFilePlugin_regFile_spinal_port0\s+=\s+RegFilePlugin_regFile\[RegFilePlugin_src1Addr\];
-\s+assign\s+RegFilePlugin_regFile_spinal_port1\s+=\s+RegFilePlugin_regFile\[RegFilePlugin_src2Addr\];
+\s+assign\s+RegFilePlugin_regFile_spinal_port0\s+=\s+RegFilePlugin_regFile\[ISS_SRC1Addr\];
+\s+assign\s+RegFilePlugin_regFile_spinal_port1\s+=\s+RegFilePlugin_regFile\[ISS_SRC2Addr\];
 \s+always\s+@\s*\(posedge\s+io_clk\)\s+begin
 \s+if\(_zz_1\)\s+begin
 \s+RegFilePlugin_regFile\[WB_RegFilePlugin_regWritePort_payload_address\]\s+<=\s+WB_RegFilePlugin_regWritePort_payload_data;
@@ -19,8 +19,8 @@ initial\s+begin
 
 # 新文本
 replacement_text = """
-  assign RegFilePlugin_regFile_spinal_port0 = RegFilePlugin_regFile[RegFilePlugin_src1Addr];
-  assign RegFilePlugin_regFile_spinal_port1 = RegFilePlugin_regFile[RegFilePlugin_src2Addr];
+  assign RegFilePlugin_regFile_spinal_port0 = RegFilePlugin_regFile[ISS_SRC1Addr];
+  assign RegFilePlugin_regFile_spinal_port1 = RegFilePlugin_regFile[ISS_SRC2Addr];
   integer i;
   always @(posedge io_clk) begin
     if (!io_reset) begin

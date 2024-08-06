@@ -25,7 +25,7 @@ class ScoreBoardPlugin extends Plugin[Core]{
             import ISS._
 
 
-            val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR).asUInt
+            val regWriteAddr = input(decodeSignals.REG_WRITE_ADDR)
             // 确保该指令会修改寄存器：
             // 指令为ALU指令或为BL指令
             val setValid = (input(decodeSignals.REG_WRITE_VALID)) && (regWriteAddr =/= 0) && (arbitration.isValidNotStuck)
@@ -36,18 +36,18 @@ class ScoreBoardPlugin extends Plugin[Core]{
             val regfile = service(classOf[RegFilePlugin])
 
             arbitration.haltItself setWhen(
-                ((scoreBoard(output(decodeSignals.SRC1Addr).asUInt) 
+                ((scoreBoard(output(decodeSignals.SRC1Addr)) 
                         && (input(decodeSignals.SRC1_FROM) === OpSrc.REG) && !regfile.rs1Forwardable) 
                 || 
-                (scoreBoard(output(decodeSignals.SRC2Addr).asUInt) 
+                (scoreBoard(output(decodeSignals.SRC2Addr)) 
                         && (input(decodeSignals.SRC2_FROM) === OpSrc.REG) && !regfile.rs2Forwardable) ))
         }
 
         EXE3 plug new Area{
             import EXE3._
-            val regWriteAddrEXE3 = input(decodeSignals.REG_WRITE_ADDR).asUInt
-            val regWriteAddrEXE2 = EXE2.input(decodeSignals.REG_WRITE_ADDR).asUInt
-            val regWriteAddrEXE1 = EXE1.input(decodeSignals.REG_WRITE_ADDR).asUInt
+            val regWriteAddrEXE3 = input(decodeSignals.REG_WRITE_ADDR)
+            val regWriteAddrEXE2 = EXE2.input(decodeSignals.REG_WRITE_ADDR)
+            val regWriteAddrEXE1 = EXE1.input(decodeSignals.REG_WRITE_ADDR)
             val regWriteValidEXE3 = input(decodeSignals.REG_WRITE_VALID)
             val regWriteValidEXE2 = EXE2.input(decodeSignals.REG_WRITE_VALID)
             val regWriteValidEXE1 = EXE1.input(decodeSignals.REG_WRITE_VALID)
