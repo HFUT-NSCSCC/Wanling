@@ -23,7 +23,8 @@ final case class BTBLineInfo(config: BTBConfig) extends Bundle{
     val lru = Bits(log2Up(config.ways) bits)
     // Branch Instruction Address, xor every 4 bit to contruct bia
     val bia = Vec(Bits(32/4 + 8 bits), config.ways)
-    val backwards = Vec(Bool, config.ways)
+    // val backwards = Vec(Bool, config.ways)
+    val tracker = Vec(UInt(2 bits), config.ways)
     // Branch Target Address
     val bta = Vec(UInt(32 bits), config.ways)
 }
@@ -78,7 +79,8 @@ class BPUPlugin extends Plugin[Core]{
             insert(BTB_HIT) := hit
 
             val predictTarget = MuxOH(hits, btbInfo.bta)
-            val backwards = MuxOH(hits, btbInfo.backwards)
+            // val backwards = MuxOH(hits, btbInfo.backwards)
+            val tracker = MuxOH(hits, btbInfo.tracker)
 
             // val fromPredictor = False
             // val DirectionPredictor = new StateMachine{
@@ -136,7 +138,8 @@ class BPUPlugin extends Plugin[Core]{
             //             }
             //         }
             // }
-            prejump := backwards && hit && arbitration.isValidNotStuck
+            // prejump := backwards && hit && arbitration.isValidNotStuck
+            prejump := tracker.msb && hit && arbitration.isValidNotStuck
             pcManager.preJump := prejump
             insert(fetchSignals.PREJUMP) := prejump
             pcManager.predictTarget := predictTarget
@@ -236,16 +239,27 @@ class BPUPlugin extends Plugin[Core]{
             val wPort = infoRAM.io.write
             val tag = input(BTB_TAG)
             val idx = input(fetchSignals.PC)(btbConfig.indexRange)
-            wPort.valid := jump && arbitration.isValid && jumpType =/= JumpType.JIRL && ~input(BTB_HIT)
+            wPort.valid := branchJumpInst && ~input(BTB_HIT)
             wPort.payload.address := idx
 
             val replaceWay = input(BTB_INFO).lru.asUInt
             val newInfo = input(BTB_INFO).copy()
+            // 若 miss, 则初始化为01(weakly not taken)
+            val oldTracker = input(BTB_HIT) ? input(BTB_INFO).tracker(replaceWay) | U(B"01")
+            // val newForBranchInst = Mux(oldTracker === B"11" && actuallyTaken, B"11",
+            //                         Mux(oldTracker === B"00" && !actuallyTaken, B"00",
+            //                         Mux(actuallyTaken)))
+            val newForBranchInst = Mux(actuallyTaken, 
+                                        Mux(oldTracker === U(B"11"), U(B"11"), oldTracker + 1),
+                                        Mux(oldTracker === U(B"00"), U(B"00"), oldTracker - 1))
+            val newTracker = (jumpType === JumpType.Branch) ? newForBranchInst | U(B"10")
             newInfo.bia := input(BTB_INFO).bia
-            newInfo.backwards := input(BTB_INFO).backwards
+            // newInfo.backwards := input(BTB_INFO).backwards
+            newInfo.tracker := input(BTB_INFO).tracker
             newInfo.bta := input(BTB_INFO).bta
             newInfo.bia(replaceWay) := tag
-            newInfo.backwards(replaceWay) := input(BRANCH_IMM).msb
+            // newInfo.backwards(replaceWay) := input(BRANCH_IMM).msb
+            newInfo.tracker(replaceWay) := newTracker
             newInfo.bta(replaceWay) := branchTarget
             newInfo.lru := ~input(BTB_INFO).lru
             valids(idx)(replaceWay).set()
