@@ -21,6 +21,7 @@ import myCPU.pipeline.issue.ScoreBoardPlugin
 import _root_.myCPU.pipeline.issue.IssuePlugin
 import myCPU.pipeline.execute.MulPlugin
 import _root_.myCPU.pipeline.fetch.ICachePlugin
+import myCPU.pipeline.fetch.BPUPlugin
 
 case class CoreConfig(){
     // object PC extends Stageable(Bits(PCWidth bits))
@@ -118,7 +119,8 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
         new IntALUPlugin,
         new MulPlugin,
         new LSUPlugin,
-        new BRUPlugin,
+        new BPUPlugin,
+        // new BRUPlugin,
     )
 
     // val regFile = service(classOf[RegFilePlugin])

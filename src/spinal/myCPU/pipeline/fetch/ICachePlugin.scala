@@ -59,8 +59,6 @@ class ICachePlugin extends Plugin[Core]{
                 p.cmd.valid := rValid
                 p.cmd.payload := rAddr(icache.indexRange)
             }
-
-            val pc = output(fetchSignals.PC)
         }
         
         IF2 plug new Area {

@@ -50,7 +50,6 @@ class BRUPlugin extends Plugin[Core]{
             val src2 = input(decodeSignals.SRC2).asUInt
             val bruOp = input(decodeSignals.BRUOp)
 
-
             val branch = Bool
 
             switch(bruOp){
