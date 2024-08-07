@@ -67,10 +67,10 @@ class BRUPlugin extends Plugin[Core]{
                     branch := src1 < src2
                 }
                 is(GE){
-                    branch := src1.asSInt > src2.asSInt
+                    branch := src1.asSInt >= src2.asSInt
                 }
                 is(GEU){
-                    branch := src1 > src2
+                    branch := src1 >= src2
                 }
                 default{
                     branch := False
@@ -80,7 +80,7 @@ class BRUPlugin extends Plugin[Core]{
             val imm = input(BRANCH_IMM)
             val jumpType = input(decodeSignals.JUMPType)
             val relativeTarget = input(fetchSignals.PC) + imm
-            val absoluteTarget = src1
+            val absoluteTarget = src1 + imm
             // val opA = Mux(jumpType =/= JumpType.JIRL, input(fetchSignals.PC), src1)
             val branchTarget = Mux(jumpType =/= JumpType.JIRL, relativeTarget, absoluteTarget)
             insert(BRANCH_TARGET) := branchTarget

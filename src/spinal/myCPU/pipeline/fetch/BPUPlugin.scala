@@ -23,6 +23,7 @@ final case class BTBLineInfo(config: BTBConfig) extends Bundle{
     val lru = Bits(log2Up(config.ways) bits)
     // Branch Instruction Address, xor every 4 bit to contruct bia
     val bia = Vec(Bits(32/4 + 8 bits), config.ways)
+    val backwards = Vec(Bool, config.ways)
     // Branch Target Address
     val bta = Vec(UInt(32 bits), config.ways)
 }
@@ -77,64 +78,65 @@ class BPUPlugin extends Plugin[Core]{
             insert(BTB_HIT) := hit
 
             val predictTarget = MuxOH(hits, btbInfo.bta)
+            val backwards = MuxOH(hits, btbInfo.backwards)
 
-            val fromPredictor = False
-            val DirectionPredictor = new StateMachine{
-                val StronglyNotTaken = new State
-                val WeaklyNotTaken = new State with EntryPoint
-                val WeaklyTaken = new State
-                val StronglyTaken = new State
-                val wPort = infoRAM.io.write
+            // val fromPredictor = False
+            // val DirectionPredictor = new StateMachine{
+            //     val StronglyNotTaken = new State
+            //     val WeaklyNotTaken = new State with EntryPoint
+            //     val WeaklyTaken = new State
+            //     val StronglyTaken = new State
+            //     val wPort = infoRAM.io.write
 
-                StronglyNotTaken
-                    .whenIsActive{
-                        fromPredictor := False
-                        when(branchJumpInst){
-                            when(actuallyTaken){
-                                goto(WeaklyNotTaken)
-                            } otherwise {
-                                goto(StronglyNotTaken)
-                            }
-                        }
-                    }
+            //     StronglyNotTaken
+            //         .whenIsActive{
+            //             fromPredictor := False
+            //             when(branchJumpInst){
+            //                 when(actuallyTaken){
+            //                     goto(WeaklyNotTaken)
+            //                 } otherwise {
+            //                     goto(StronglyNotTaken)
+            //                 }
+            //             }
+            //         }
 
-                WeaklyNotTaken
-                    .whenIsActive{
-                        fromPredictor := False
-                        when(branchJumpInst){
-                            when(actuallyTaken){
-                                goto(WeaklyTaken)
-                            } otherwise {
-                                goto(StronglyNotTaken)
-                            }
-                        }
-                    }
+            //     WeaklyNotTaken
+            //         .whenIsActive{
+            //             fromPredictor := False
+            //             when(branchJumpInst){
+            //                 when(actuallyTaken){
+            //                     goto(WeaklyTaken)
+            //                 } otherwise {
+            //                     goto(StronglyNotTaken)
+            //                 }
+            //             }
+            //         }
 
-                WeaklyTaken
-                    .whenIsActive{
-                        fromPredictor := True
-                        when(branchJumpInst){
-                            when(actuallyTaken){
-                                goto(StronglyTaken)
-                            } otherwise {
-                                goto(WeaklyNotTaken)
-                            }
-                        }
-                    }
+            //     WeaklyTaken
+            //         .whenIsActive{
+            //             fromPredictor := True
+            //             when(branchJumpInst){
+            //                 when(actuallyTaken){
+            //                     goto(StronglyTaken)
+            //                 } otherwise {
+            //                     goto(WeaklyNotTaken)
+            //                 }
+            //             }
+            //         }
 
-                StronglyTaken
-                    .whenIsActive{
-                        fromPredictor := True
-                        when(branchJumpInst){
-                            when(actuallyTaken){
-                                goto(StronglyTaken)
-                            } otherwise {
-                                goto(WeaklyTaken)
-                            }
-                        }
-                    }
-            }
-            prejump := fromPredictor && hit && arbitration.isValidNotStuck
+            //     StronglyTaken
+            //         .whenIsActive{
+            //             fromPredictor := True
+            //             when(branchJumpInst){
+            //                 when(actuallyTaken){
+            //                     goto(StronglyTaken)
+            //                 } otherwise {
+            //                     goto(WeaklyTaken)
+            //                 }
+            //             }
+            //         }
+            // }
+            prejump := backwards && hit && arbitration.isValidNotStuck
             pcManager.preJump := prejump
             insert(fetchSignals.PREJUMP) := prejump
             pcManager.predictTarget := predictTarget
@@ -175,10 +177,10 @@ class BPUPlugin extends Plugin[Core]{
                     branch := src1 < src2
                 }
                 is(GE){
-                    branch := src1.asSInt > src2.asSInt
+                    branch := src1.asSInt >= src2.asSInt
                 }
                 is(GEU){
-                    branch := src1 > src2
+                    branch := src1 >= src2
                 }
                 default{
                     branch := False
@@ -188,7 +190,7 @@ class BPUPlugin extends Plugin[Core]{
             val imm = input(BRANCH_IMM)
             val jumpType = input(decodeSignals.JUMPType)
             val relativeTarget = input(fetchSignals.PC) + imm
-            val absoluteTarget = src1
+            val absoluteTarget = src1 + imm
             // val opA = Mux(jumpType =/= JumpType.JIRL, input(fetchSignals.PC), src1)
             val branchTarget = Mux(jumpType =/= JumpType.JIRL, relativeTarget, absoluteTarget)
             insert(BRANCH_TARGET) := branchTarget
@@ -203,12 +205,23 @@ class BPUPlugin extends Plugin[Core]{
             val jump = Bool
 
             jump := (jumpType === JumpType.Branch && branch) || (jumpType =/= JumpType.NONE && jumpType =/= JumpType.Branch)
+        
 
             val preJump = input(fetchSignals.PREJUMP)
             val redirect = (jump ^ preJump) && arbitration.isValid
             branchJumpInst := jumpType =/= JumpType.NONE && jumpType =/= JumpType.JIRL && arbitration.isValid
             actuallyTaken := jump && arbitration.isValid
             actualBranchTarget := branchTarget
+
+            // profiling
+            // val count = RegInit(U(0, 32 bits))
+            // val miss = RegInit(U(0, 32 bits))
+            // when(branchJumpInst){
+            //     count := count + 1
+            //     when(redirect){
+            //         miss := miss + 1
+            //     }
+            // }
             
             pcManager.redirect := redirect
             pcManager.redirectTarget := Mux(jump, branchTarget, input(fetchSignals.PC) + U(4))
@@ -229,8 +242,10 @@ class BPUPlugin extends Plugin[Core]{
             val replaceWay = input(BTB_INFO).lru.asUInt
             val newInfo = input(BTB_INFO).copy()
             newInfo.bia := input(BTB_INFO).bia
+            newInfo.backwards := input(BTB_INFO).backwards
             newInfo.bta := input(BTB_INFO).bta
             newInfo.bia(replaceWay) := tag
+            newInfo.backwards(replaceWay) := input(BRANCH_IMM).msb
             newInfo.bta(replaceWay) := branchTarget
             newInfo.lru := ~input(BTB_INFO).lru
             valids(idx)(replaceWay).set()
