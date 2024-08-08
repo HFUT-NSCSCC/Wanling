@@ -23,7 +23,7 @@ final case class CacheLineInfo(config: CacheBasicConfig, useDirty: Boolean = fal
 
 class ICachePlugin extends Plugin[Core]{
     val instBundle = master(InstBundle())
-    val branchable = True
+    val branchable = RegInit(True)
     private val icache = ICacheConfig()
 
     val valids = Vec(Vec(RegInit(False), icache.ways), icache.sets)
@@ -47,17 +47,18 @@ class ICachePlugin extends Plugin[Core]{
         IF1 plug new Area {
             import IF1._
             val rValid = !pipeline.IF1.arbitration.isStuck
-            val pcBeforeStuck = RegNextWhen[UInt](IF1.output(fetchSignals.PC), !IF1.arbitration.isStuck, init = PC_INIT)
+            // val pcBeforeStuck = RegNextWhen[UInt](IF1.output(fetchSignals.PC), !IF1.arbitration.isStuck, init = PC_INIT)
             
-            val rAddr = IF1.arbitration.isStuck ? pcBeforeStuck | pipeline.IF1.output(fetchSignals.PC)
+            val rAddr = pipeline.IF1.output(fetchSignals.PC)
+            val idx = rAddr(icache.indexRange)
             // val rAddr = Mux(refetchValid, pipeline.IF1.output(fetchSignals.PC), pipeline.IF1.output(fetchSignals.NPC))
             rPort.cmd.valid := rValid
-            rPort.cmd.payload := rAddr(icache.indexRange)
+            rPort.cmd.payload := idx
     
             val dataRs = Vec(dataRAMs.map(_.io.read))
             dataRs.foreach{ p => 
                 p.cmd.valid := rValid
-                p.cmd.payload := rAddr(icache.indexRange)
+                p.cmd.payload := idx
             }
         }
         
@@ -128,7 +129,6 @@ class ICachePlugin extends Plugin[Core]{
 
                 READ.whenIsActive{
                     arbitration.haltItself.set()
-                        branchable := False
                     when(instBundle.rresp){
                         dataWs(replaceWay).valid := True
                         dataWs(replaceWay).payload.address := idx
@@ -149,7 +149,7 @@ class ICachePlugin extends Plugin[Core]{
 
                 COMMIT.whenIsActive{
                     arbitration.haltByOther.set()
-                        branchable := False
+                    // branchable := True
                     when(instBundle.rresp) {
                         dataWs(replaceWay).valid := True
                         dataWs(replaceWay).payload.address := idx
@@ -169,6 +169,7 @@ class ICachePlugin extends Plugin[Core]{
                 }
 
                 FINISH.whenIsActive{
+                    branchable := True
                     when(!arbitration.isStuck){
                         insert(fetchSignals.INST) := inst2Fire
                         goto(stateBoot)

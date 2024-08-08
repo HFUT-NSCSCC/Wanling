@@ -216,7 +216,7 @@ class BPUPlugin extends Plugin[Core]{
             actuallyTaken := jump && arbitration.isValid
             actualBranchTarget := branchTarget
 
-            // profiling
+            // branch prediction accuracy profiling
             // val count = RegInit(U(0, 32 bits))
             // val miss = RegInit(U(0, 32 bits))
             // when(branchJumpInst){
@@ -246,9 +246,12 @@ class BPUPlugin extends Plugin[Core]{
             val newInfo = input(BTB_INFO).copy()
             // 若 miss, 则初始化为01(weakly not taken)
             val oldTracker = input(BTB_HIT) ? input(BTB_INFO).tracker(replaceWay) | U(B"01")
-            // val newForBranchInst = Mux(oldTracker === B"11" && actuallyTaken, B"11",
-            //                         Mux(oldTracker === B"00" && !actuallyTaken, B"00",
-            //                         Mux(actuallyTaken)))
+            // |  old  |  taken  |  not taken  |
+            // |  ---  |  -----  |  ---------  |
+            // |  0 0  |   0 1   |     0 0     |
+            // |  0 1  |   1 0   |     0 0     |  <-  (init)
+            // |  1 0  |   1 1   |     0 1     |
+            // |  1 1  |   1 1   |     1 0     |
             val newForBranchInst = Mux(actuallyTaken, 
                                         Mux(oldTracker === U(B"11"), U(B"11"), oldTracker + 1),
                                         Mux(oldTracker === U(B"00"), U(B"00"), oldTracker - 1))
