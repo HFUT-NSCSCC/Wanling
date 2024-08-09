@@ -64,7 +64,7 @@ class LSUPlugin extends Plugin[Core]{
             val memSignals = input(exeSignals.memSignals)
             val lsuSignals = input(exeSignals.lsuSignals)
             // memory read
-            arbitration.haltItself setWhen(lsuSignals.MEM_READ.orR && !data.rresp)
+            arbitration.haltItself setWhen(lsuSignals.MEM_READ.orR && !data.rresp && arbitration.isValid)
             insert(writeSignals.MEM_RDATA_WB_RAW) := data.rdata
         }
         

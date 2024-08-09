@@ -6,7 +6,7 @@ object LA32R {
     def PC_INIT:Long = 0x80000000L
 
     def CYCLES_TO_WRITE = 3
-    def CYCLES_TO_READ = 2
+    def CYCLES_TO_READ = 3
 
     def InstWidth = 32
 
