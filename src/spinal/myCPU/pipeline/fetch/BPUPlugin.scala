@@ -22,7 +22,7 @@ final case class BTBConfig(
 final case class BTBLineInfo(config: BTBConfig) extends Bundle{
     val lru = Bits(log2Up(config.ways) bits)
     // Branch Instruction Address, xor every 4 bit to contruct bia
-    val bia = Vec(Bits(32/4 + 8 bits), config.ways)
+    val bia = Vec(Bits(22 bits), config.ways)
     // val backwards = Vec(Bool, config.ways)
     val tracker = Vec(UInt(2 bits), config.ways)
     // Branch Target Address
@@ -34,20 +34,20 @@ class BPUPlugin extends Plugin[Core]{
     val valids = Vec(Vec(RegInit(False), btbConfig.ways), btbConfig.sets)
     val infoRAM = new SDPRAMAsync(BTBLineInfo(btbConfig), btbConfig.sets)
 
-    object BTB_TAG extends Stageable(Bits(32/4 + 8 bits))
+    object BTB_TAG extends Stageable(Bits(22 bits))
     object BTB_INFO extends Stageable(BTBLineInfo(btbConfig))
     object BTB_HIT extends Stageable(Bool)
     object BRANCH extends Stageable(Bool)
     object BRANCH_TARGET extends Stageable(UInt(32 bits))
-    object BRANCH_IMM extends Stageable(UInt(32 bits))
+    // object BRANCH_IMM extends Stageable(UInt(32 bits))
 
     def getBTBTag(pc: UInt): Bits = {
-        val width = pc.getWidth / 4 + 8
-        val ret = Bits(width bits)
-        for (i <- 0 until width - 8){
-            ret(i) := pc(i*4) ^ pc(i*4+1) ^ pc(i*4+2) ^ pc(i*4+3)
-        }
-        ret(width-1 downto width - 8) := pc(11 downto 4).asBits
+        // val width = pc.getWidth / 4 + 8
+        val ret = pc(23 downto 2).asBits
+        // for (i <- 0 until width - 8){
+        //     ret(i) := pc(i*4) ^ pc(i*4+1) ^ pc(i*4+2) ^ pc(i*4+3)
+        // }
+        // ret(width-1 downto width - 8) := pc(11 downto 4).asBits
         ret
     }
 
@@ -145,17 +145,17 @@ class BPUPlugin extends Plugin[Core]{
             pcManager.predictTarget := predictTarget
         }
 
-        IF2 plug new Area{
-            import IF2._
-            // get the immediate number of branch instruction
-            val inst = output(fetchSignals.INST)
-            val immType = Mux(inst(29 downto 27) === B"010", ImmExtType.SI26, ImmExtType.SI16)
-            val immExtForBranch = ImmExtForBranch()
-            immExtForBranch.io.inst := inst
-            immExtForBranch.io.immType := immType
-            val imm = immExtForBranch.io.imm.asUInt
-            insert(BRANCH_IMM) := imm
-        }
+        // IF2 plug new Area{
+        //     import IF2._
+        //     // get the immediate number of branch instruction
+        //     val inst = output(fetchSignals.INST)
+        //     val immType = Mux(inst(29 downto 27) === B"010", ImmExtType.SI26, ImmExtType.SI16)
+        //     val immExtForBranch = ImmExtForBranch()
+        //     immExtForBranch.io.inst := inst
+        //     immExtForBranch.io.immType := immType
+        //     val imm = immExtForBranch.io.imm.asUInt
+        //     insert(BRANCH_IMM) := imm
+        // }
 
         ISS plug new Area{
             import ISS._
@@ -190,7 +190,7 @@ class BPUPlugin extends Plugin[Core]{
                 }
             }
             insert(BRANCH) := branch
-            val imm = input(BRANCH_IMM)
+            val imm = input(decodeSignals.IMM).asUInt
             val jumpType = input(decodeSignals.JUMPType)
             val relativeTarget = input(fetchSignals.PC) + imm
             val absoluteTarget = src1 + imm

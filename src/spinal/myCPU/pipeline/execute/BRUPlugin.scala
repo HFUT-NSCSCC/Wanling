@@ -9,7 +9,8 @@ import _root_.myCPU.constants._
 import myCPU.pipeline.fetch.FetcherPlugin
 import myCPU.pipeline.fetch.ICachePlugin
 import myCPU.builder.Stageable
-import myCPU.pipeline.fetch.ImmExtForBranch
+// import myCPU.pipeline.fetch.ImmExtForBranch
+import myCPU.pipeline.decode.ImmExt
 
 class BRUPlugin extends Plugin[Core]{
     object BRANCH extends Stageable(Bool)
@@ -29,7 +30,7 @@ class BRUPlugin extends Plugin[Core]{
             val inst = output(fetchSignals.INST)
             val isBranch = inst(31 downto 30) === B"01" && inst(29 downto 26) =/= B"0011"
             val immType = Mux(inst(29 downto 27) === B"010", ImmExtType.SI26, ImmExtType.SI16)
-            val immExtForBranch = ImmExtForBranch()
+            val immExtForBranch = ImmExt()
             immExtForBranch.io.inst := inst
             immExtForBranch.io.immType := immType
             val imm = immExtForBranch.io.imm.asUInt

@@ -150,6 +150,11 @@ class RegFilePlugin extends Plugin[Core]{
             global.rs1BypassNetwork.io.rsISS <> src1Addr
             global.rs2BypassNetwork.io.rsISS <> src2Addr
 
+            arbitration.haltItself setWhen(
+                (((input(decodeSignals.SRC1_FROM) === OpSrc.REG) && !rs1Forwardable) 
+                || 
+                ((input(decodeSignals.SRC2_FROM) === OpSrc.REG) && !rs2Forwardable) ))
+
             // val src1Data = (wvalid && src1Addr.asBits === waddr && (input(decodeSignals.SRC1_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src1Addr)
             // val src2Data = (wvalid && src2Addr.asBits === waddr && (input(decodeSignals.SRC2_FROM) === ALUOpSrc.REG)) ? (wdata) | global.regFile.readAsync(src2Addr)
             val src1Data = Bits(32 bits)

@@ -36,11 +36,11 @@ class ScoreBoardPlugin extends Plugin[Core]{
             val regfile = service(classOf[RegFilePlugin])
 
             arbitration.haltItself setWhen(
-                ((scoreBoard(output(decodeSignals.SRC1Addr)) 
-                        && (input(decodeSignals.SRC1_FROM) === OpSrc.REG) && !regfile.rs1Forwardable) 
+                (((input(decodeSignals.SRC1_FROM) === OpSrc.REG) && !regfile.rs1Forwardable) 
                 || 
-                (scoreBoard(output(decodeSignals.SRC2Addr)) 
-                        && (input(decodeSignals.SRC2_FROM) === OpSrc.REG) && !regfile.rs2Forwardable) ))
+                ((input(decodeSignals.SRC2_FROM) === OpSrc.REG) && !regfile.rs2Forwardable) ))
+
+            // arbitration.haltItself setWhen(!regfile.rs1Forwardable || !regfile.rs2Forwardable)
         }
 
         EXE3 plug new Area{
