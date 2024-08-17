@@ -25,6 +25,8 @@ class DecodeSignals(config: CoreConfig) {
     // BRU
     object BRUOp extends Stageable(BRUOpType())
 
+    object MULOp extends Stageable(MULOpType())
+
     // LSU
     object MEM_READ extends Stageable(Bits(4 bits))
     object MEM_READ_UE extends Stageable(Bool)
@@ -37,28 +39,28 @@ class DecodeSignals(config: CoreConfig) {
     // object REG_WRITE_DATA extends Stageable(Bits(DataWidth bits))
 }
 
-final case class MicroOp() extends Bundle {
-    val FUType = FuType()
-    val IMMExtType = ImmExtType()
+// final case class MicroOp() extends Bundle {
+//     val FUType = FuType()
+//     val IMMExtType = ImmExtType()
 
-    val SRC1Addr = Bits(RegAddrWidth bits)
-    val SRC2Addr = Bits(RegAddrWidth bits)
-    val SRC1 = Bits(DataWidth bits)
-    val SRC2 = Bits(DataWidth bits)
-    val ALUOp = ALUOpType()
-    val SRC1_FROM_IMM = Bool
-    val SRC2_FROM_IMM = Bool
-    val RESULT = Bits(DataWidth bits)
+//     val SRC1Addr = Bits(RegAddrWidth bits)
+//     val SRC2Addr = Bits(RegAddrWidth bits)
+//     val SRC1 = Bits(DataWidth bits)
+//     val SRC2 = Bits(DataWidth bits)
+//     val ALUOp = ALUOpType()
+//     val SRC1_FROM_IMM = Bool
+//     val SRC2_FROM_IMM = Bool
+//     val RESULT = Bits(DataWidth bits)
 
-    val BRUOp = BRUOpType()
-    val IMM = Bits(DataWidth bits)
-    val JUMPType = JumpType()
+//     val BRUOp = BRUOpType()
+//     val IMM = Bits(DataWidth bits)
+//     val JUMPType = JumpType()
 
-    val MEM_READ = Bits(4 bits)
-    val MEM_READ_UE = Bool
-    val MEM_WRITE = Bits(4 bits)
-    val MEM_RDATA = Bits(DataWidth bits)
-    val REG_WRITE_VALID = Bool
-    val REG_WRITE_ADDR = Bits(RegAddrWidth bits)
-    val REG_WRITE_DATA = Bits(DataWidth bits)
-}
+//     val MEM_READ = Bits(4 bits)
+//     val MEM_READ_UE = Bool
+//     val MEM_WRITE = Bits(4 bits)
+//     val MEM_RDATA = Bits(DataWidth bits)
+//     val REG_WRITE_VALID = Bool
+//     val REG_WRITE_ADDR = Bits(RegAddrWidth bits)
+//     val REG_WRITE_DATA = Bits(DataWidth bits)
+// }

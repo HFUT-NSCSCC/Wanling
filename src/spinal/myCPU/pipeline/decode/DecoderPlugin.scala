@@ -53,6 +53,7 @@ class DecoderPlugin extends Plugin[Core]{
         addDefault(SRC2_FROM, OpSrc.NONE)
         addDefault(IMMExtType, ImmExtType.NONE)
         addDefault(JUMPType, JumpType.NONE)
+        addDefault(MULOp, MULOpType.NONE)
         addDefault(BRUOp, BRUOpType.NONE)
         addDefault(MEM_WRITE, B"0000")
         addDefault(MEM_READ, B"0000")
@@ -91,7 +92,12 @@ class DecoderPlugin extends Plugin[Core]{
         )
 
         add(List(
-            LA32R.MUL  -> (mul2RInst ++ List()),
+            LA32R.MUL   -> (mul2RInst ++ List(MULOp -> MULOpType.MUL)),
+            LA32R.MULH  -> (mul2RInst ++ List(MULOp -> MULOpType.MULH)),
+            LA32R.DIV   -> (mul2RInst ++ List(MULOp -> MULOpType.DIV)),
+            LA32R.DIVU  -> (mul2RInst ++ List(MULOp -> MULOpType.DIVU)),
+            LA32R.MOD   -> (mul2RInst ++ List(MULOp -> MULOpType.MOD)),
+            LA32R.MODU  -> (mul2RInst ++ List(MULOp -> MULOpType.MODU)),
         ))
 
         val alu2R1I8Inst = List[(Stageable[_ <: BaseType], Any)](

@@ -5,11 +5,16 @@ import myCPU.builder.Plugin
 import myCPU.core.Core
 import myCPU.builder.Stageable
 import NOP.blackbox.execute.Multiplier
+import myCPU.constants.MULOpType
+import spinal.lib.math.MixedDivider
+import spinal.lib.math.UnsignedDivider
+import myCPU.blackbox.Divider
 
 class MulPlugin extends Plugin[Core]{
-    object MUL_LL extends Stageable(UInt(32 bits))
-    object MUL_LH extends Stageable(SInt(34 bits))
-    object MUL_HL extends Stageable(SInt(34 bits))
+    object OPA extends Stageable(SInt(32 bits))
+    object OPB extends Stageable(SInt(32 bits))
+    object SIGNED extends Stageable(Bool)
+    object DIVISION extends Stageable(Bool)
     override def setup(pipeline: Core): Unit = {
 
     }
@@ -17,16 +22,43 @@ class MulPlugin extends Plugin[Core]{
     def build(pipeline: Core): Unit = {
         import pipeline._
         import pipeline.config._
+        val mult = new Multiplier()
+        // val divider = new MixedDivider(32, 32, false)
+        val divider = new Divider()
 
         val multInStage = EXE1 plug new Area{
             import EXE1._
             val aluSignals = input(exeSignals.intALUSignals)
-            val a = aluSignals.SRC1
-            val b = aluSignals.SRC2
+            val a = aluSignals.SRC1.asSInt
+            val b = aluSignals.SRC2.asSInt
+            insert(OPA) := a
+            insert(OPB) := b
+            val signed = !(input(decodeSignals.MULOp) === MULOpType.MULHU || 
+                         input(decodeSignals.MULOp) === MULOpType.DIVU || 
+                         input(decodeSignals.MULOp) === MULOpType.MODU)
+            insert(SIGNED) := signed
+            val absA = a.abs(signed)
+            val absB = b.abs(signed)
 
-            val mult = new Multiplier()
-            mult.io.A := a.asUInt
-            mult.io.B := b.asUInt
+            mult.io.A := absA
+            mult.io.B := absB
+
+
+            val isDivision = arbitration.isValid && (input(decodeSignals.MULOp) === MULOpType.DIV || input(decodeSignals.MULOp) === MULOpType.DIVU || 
+                             input(decodeSignals.MULOp) === MULOpType.MOD || input(decodeSignals.MULOp) === MULOpType.MODU)
+            insert(DIVISION) := isDivision
+            divider.io.s_axis_dividend_tvalid := isDivision
+            divider.io.s_axis_dividend_tdata := absA.asBits
+            divider.io.s_axis_divisor_tvalid := isDivision
+            divider.io.s_axis_divisor_tdata := absB.asBits
+
+            // divider.io.flush := False
+            // divider.io.cmd.valid := isDivision
+            // divider.io.cmd.signed := signed
+            // divider.io.cmd.numerator := a.asBits
+            // divider.io.cmd.denominator := b.asBits
+
+            // val divider = new MixedDivider()
 
             // val aULow = a(15 downto 0).asUInt
             // val bULow = b(15 downto 0).asUInt
@@ -39,10 +71,42 @@ class MulPlugin extends Plugin[Core]{
             // insert(MUL_HL) := aHigh * bSLow
         }
 
-        EXE2 plug new Area{
-            import EXE2._
+        EXE3 plug new Area{
+            import EXE3._
+            val a = input(OPA)
+            val b = input(OPB)
 
-            insert(writeSignals.MUL_RESULT_WB) := multInStage.mult.io.P.asBits(31 downto 0)
+            val signed = input(SIGNED)
+            val mulResult = mult.io.P.twoComplement(signed && (a.sign ^ b.sign)).asBits(0, 64 bits)
+
+            // divider.io.rsp.ready := !arbitration.isStuckByOthers
+            arbitration.haltItself setWhen(arbitration.isValidOnEntry && input(DIVISION) && !divider.io.m_axis_dout_tvalid)
+            val absQuotient = divider.io.m_axis_dout_tdata(63 downto 32).asUInt
+            val absRemainder = divider.io.m_axis_dout_tdata(31 downto 0).asUInt
+            val quotient = absQuotient.twoComplement(signed && (a.sign ^ b.sign)).asBits(0, 32 bits)
+            val remainder = absRemainder.twoComplement(signed && a.sign).asBits(0, 32 bits)
+
+            // insert(writeSignals.MUL_RESULT_WB) := (input(decodeSignals.MULOp) === MULOpType.MUL) ? 
+            //                                             mulResult(31 downto 0) | 
+            //                                             mulResult(63 downto 32)
+
+            switch(input(decodeSignals.MULOp)){
+                is(MULOpType.MUL){
+                    insert(writeSignals.MUL_RESULT_WB) := mulResult(31 downto 0)
+                }
+                is(MULOpType.MULH, MULOpType.MULHU){
+                    insert(writeSignals.MUL_RESULT_WB) := mulResult(63 downto 32)
+                }
+                is(MULOpType.DIV, MULOpType.DIVU){
+                    insert(writeSignals.MUL_RESULT_WB) := quotient
+                }
+                is(MULOpType.MOD, MULOpType.MODU){
+                    insert(writeSignals.MUL_RESULT_WB) := remainder
+                }
+                default{
+                    insert(writeSignals.MUL_RESULT_WB) := 0
+                }
+            }
 
             // insert(writeSignals.MUL_RESULT_WB) := (S(0, MUL_HL.dataType.getWidth + 16 + 2 bit) + 
             //                         (False ## input(MUL_LL)).asSInt + 

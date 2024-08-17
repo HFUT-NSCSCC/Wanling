@@ -69,9 +69,9 @@ class RegFilePlugin extends Plugin[Core]{
                 // is(FuType.LSU) {
                 //     fromEXE2 := EXE2.output(writeSignals.MEM_RDATA_WB)
                 // }
-                is(FuType.MUL) {
-                    fromEXE2 := EXE2.output(writeSignals.MUL_RESULT_WB)
-                }
+                // is(FuType.MUL) {
+                //     fromEXE2 := EXE2.output(writeSignals.MUL_RESULT_WB)
+                // }
                 default{
                     fromEXE2 := 0
                 }
