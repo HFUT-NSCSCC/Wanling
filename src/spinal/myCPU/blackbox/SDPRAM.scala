@@ -3,6 +3,7 @@ package myCPU.blackbox
 import spinal.core._
 import spinal.lib._
 
+// src: https://github.com/NOP-Processor/NOP-Core/blob/master/src/blackbox/mem/SDPRAM.scala
 object noChange extends ReadUnderWritePolicy {
   override def readUnderWriteString: String = "noChange"
 }

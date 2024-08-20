@@ -6,6 +6,7 @@ import myCPU.core.LA32R._
 import myCPU.core.CoreConfig
 import myCPU.constants._
 
+// 控制信号
 class DecodeSignals(config: CoreConfig) {
     // object microOp extends Stageable(MicroOp
     object FUType extends Stageable(FuType())

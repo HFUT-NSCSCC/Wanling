@@ -23,69 +23,11 @@ import myCPU.pipeline.execute.MulPlugin
 import _root_.myCPU.pipeline.fetch.ICachePlugin
 import myCPU.pipeline.fetch.BPUPlugin
 
+// 实际并没有用上，可以移除
 case class CoreConfig(){
-    // object PC extends Stageable(Bits(PCWidth bits))
-    // object RJ extends Stageable(Bits(5 bits))
-    // object RK extends Stageable(Bits(5 bits))
-    // object RJData extends Stageable(Bits(32 bits))
-    // object RKData extends Stageable(Bits(32 bits))
-
-    // object FUType extends Stageable(FuType())
-    // object IMM extends Stageable(Bits(DataWidth bits))
-    // object IMMExtType extends Stageable(ImmExtType())
-    // object JUMPType extends Stageable(JumpType())
-
-    // // ALU
-    // object SRC1Addr extends Stageable(Bits(RegAddrWidth bits))
-    // object SRC2Addr extends Stageable(Bits(RegAddrWidth bits))
-    // object SRC1 extends Stageable(Bits(DataWidth bits))
-    // object SRC2 extends Stageable(Bits(DataWidth bits))
-    // object ALUOp extends Stageable(ALUOpType())
-    // object SRC1_FROM_IMM extends Stageable(Bool)
-    // object SRC2_FROM_IMM extends Stageable(Bool)
-    // object RESULT extends Stageable(Bits(DataWidth bits))
-
-    // // BRU
-    // object BRUOp extends Stageable(BRUOpType())
-
-    // // LSU
-    // object MEM_READ extends Stageable(Bits(4 bits))
-    // object MEM_READ_UE extends Stageable(Bool)
-    // object MEM_WRITE extends Stageable(Bits(4 bits))
-    // object MEM_RDATA extends Stageable(Bits(DataWidth bits))
-    // // object RA extends Stageable(Bits(32 bits))
-    // // object INST extends Stageable(Bits(InstWidth bits))
-    // object REG_WRITE_VALID extends Stageable(Bool)
-    // object REG_WRITE_ADDR extends Stageable(Bits(RegAddrWidth bits))
-    // object REG_WRITE_DATA extends Stageable(Bits(DataWidth bits))
 }
 
 class Core(val config: CoreConfig) extends Component with Pipeline {
-    // val io = new Bundle{
-    //     // val ipi = in(Bool)
-    //     // val interrupt = in(Bits(2 bits))
-
-    //     // val inst = new Bundle{
-    //     //     val en = out(Bool)
-    //     //     val addr = out(Bits(32 bits))
-    //     //     val rdata = in(Bits(32 bits))
-    //     // }
-
-    //     // val data = new Bundle{
-    //     //     val en = out(Bool)
-    //     //     val wen = out(Bool)
-    //     //     val addr = out(Bits(32 bits))
-    //     //     val wdata = out(Bits(32 bits))
-    //     //     val rdata = in(Bits(32 bits))
-    //     // }
-
-    //     val debug = new Bundle{
-    //         val pc = out(Bits(32 bits))
-    //         val wen = out(Bool)
-    //         val wnum = out(Bits(5 bits))
-    //         val wdata = out(Bits(32 bits))
-    //     }
-    // }
     type T = Core
     import config._
 
@@ -105,6 +47,7 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
     val exeSignals = new ExecuteSignals(config)
     val writeSignals = new WritebackSignals(config)
 
+    // 插件列表
     plugins ++= List(
         new RegFilePlugin,
         new PCManagerPlugin,
@@ -122,11 +65,4 @@ class Core(val config: CoreConfig) extends Component with Pipeline {
         new BPUPlugin,
         // new BRUPlugin,
     )
-
-    // val regFile = service(classOf[RegFilePlugin])
-    // io.debug.pc := 0x0
-    // io.debug.wen := regFile.debug.wen
-    // io.debug.wnum := regFile.debug.wnum
-    // io.debug.wdata := regFile.debug.wdata
-    // this.connectStages()
 }

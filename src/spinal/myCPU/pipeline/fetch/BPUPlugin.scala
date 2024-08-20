@@ -29,8 +29,11 @@ final case class BTBLineInfo(config: BTBConfig) extends Bundle{
     val bta = Vec(UInt(32 bits), config.ways)
 }
 
+
+// 简易的分支预测实现, 逻辑类似于Cache的实现方法
 class BPUPlugin extends Plugin[Core]{
     private val btbConfig = BTBConfig()
+    // 为了能够在当前周期获得BTB信息, 采用了异步存储器
     val valids = Vec(Vec(RegInit(False), btbConfig.ways), btbConfig.sets)
     val infoRAM = new SDPRAMAsync(BTBLineInfo(btbConfig), btbConfig.sets)
 
@@ -41,6 +44,7 @@ class BPUPlugin extends Plugin[Core]{
     object BRANCH_TARGET extends Stageable(UInt(32 bits))
     // object BRANCH_IMM extends Stageable(UInt(32 bits))
 
+    // 根据监控程序, 这样的tag足够使用且能保证唯一
     def getBTBTag(pc: UInt): Bits = {
         // val width = pc.getWidth / 4 + 8
         val ret = pc(23 downto 2).asBits

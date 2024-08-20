@@ -58,6 +58,7 @@ class Stage() extends Area {
 //  def apply[T <: Data](key : Stageable[T]) : T = ???
 
   val arbitration = new Area {
+    // 添加了DONT_TOUCH标志，否则halt相关的信号会被vivado的综合器优化掉，导致cpu无法正常运行
     val haltItself = False.addAttribute("DONT_TOUCH") // user settable, stuck the instruction, should only be set by the instruction itself
     val haltByOther =
       False // When settable, stuck the instruction, should only be set by something else than the stucked instruction

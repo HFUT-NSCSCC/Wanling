@@ -11,20 +11,12 @@ import myCPU.constants.OpSrc.PC
 
 class PCManagerPlugin extends Plugin[Core]{
     val nextPC = UInt(32 bits)
-    // val jumpTarget = UInt(32 bits)
-    // val jump = Bool
 
     val preJump = Bool
     val predictTarget = UInt(32 bits)
     val redirect = Bool
     val redirectTarget = UInt(32 bits)
 
-    // val instBundle = new InstBundle()
-    
-    // def jump(target: UInt): Unit = {
-    //     jump := True
-    //     nextPC := target
-    // }
     override def setup(pipeline: Core): Unit = {
         
     }

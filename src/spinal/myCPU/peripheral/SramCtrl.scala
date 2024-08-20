@@ -22,6 +22,9 @@ case class Sram(ramname: String) extends Bundle with IMasterSlave{
 
 }
 
+
+// Ext-SRAM控制器
+// 状态机设计: https://jiunian-pic-1310185536.cos.ap-nanjing.myqcloud.com/image-20240820211735193.png
 class ExtSramCtrl extends Component{
     val io = new Bundle{
         val fromBridgeExt = slave(BusBundle("data_sram"))
@@ -161,6 +164,8 @@ class ExtSramCtrl extends Component{
     }
 }
 
+// base-sram控制器
+// 状态机设计: https://jiunian-pic-1310185536.cos.ap-nanjing.myqcloud.com/image-20240820211839159.png
 class BaseSramCtrl extends Component{
     val io = new Bundle{
         val instBundle = slave(InstBundle())

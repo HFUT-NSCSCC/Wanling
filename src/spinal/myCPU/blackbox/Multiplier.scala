@@ -4,6 +4,8 @@ import spinal.core._
 import spinal.lib._
 import spinal.sim._
 
+
+// 乘法器的黑盒声明
 class Multiplier(dataWidth: Int = 32, name: String = "multiplier") extends BlackBox {
   setDefinitionName(name)
   noIoPrefix()

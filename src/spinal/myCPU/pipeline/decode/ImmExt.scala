@@ -4,6 +4,7 @@ import spinal.core._
 import spinal.lib._
 import myCPU.constants.ImmExtType
 
+// 立即数扩展
 final case class ImmExt() extends Component{
     val io = new Bundle{
         val inst = in(Bits(32 bits))

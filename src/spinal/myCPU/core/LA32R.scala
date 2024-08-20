@@ -5,11 +5,13 @@ object LA32R {
     def PCWidth = 32
     def PC_INIT:Long = 0x80000000L
 
+    // 存储器读写周期的设定，可以自行配置，处理器核与访存控制器之间使用简易握手协议通信
     def CYCLES_TO_WRITE = 4
     def CYCLES_TO_READ = 4
 
     def InstWidth = 32
 
+    // 寄存器数量
     def NR_REG = 32
     def RegAddrWidth = log2Up(NR_REG)
 
@@ -22,12 +24,14 @@ object LA32R {
 
     // def useCache = true
 
+    // 掩码的生成
     private def MM(mask: String): MaskedLiteral = {
         val replace_mask = mask.replace(" ", "")
         assert(replace_mask.length == 32)
         MaskedLiteral(replace_mask)
     }
 
+    // 所实现的所有指令定义
     def NONE      = MM("00000000000000000 00000 00000 00000")
 
     // 3R-type

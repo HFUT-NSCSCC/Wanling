@@ -52,10 +52,6 @@ class MyCPU(val config: CoreConfig) extends Component{
     val io = new Bundle{
         val clk = in(Bool)
         val reset = in(Bool)
-        // val inst = master(InstBundle())
-        // val data = master(DataBundle())
-        // val instSram = master(BusBundle("inst_sram"))
-        // val dataSram = master(BusBundle("data_sram"))
         val baseSram = master(Sram("base_ram"))
         val extSram = master(Sram("ext_ram"))
         val conf = master(BusBundle("conf"))
@@ -74,15 +70,8 @@ class MyCPU(val config: CoreConfig) extends Component{
         val cpu = new Core(config)
 
         val regFile = cpu.service(classOf[RegFilePlugin])
-        // io.debug.pc <> 0x80000000 
-        // io.debug.wen := regFile.debug.wen
-        // io.debug.wnum := regFile.debug.wnum
-        // io.debug.wdata := regFile.debug.wdata
-        // io.debug <> regFile.debug
 
         val baseSramCtrl = new BaseSramCtrl()
-        // val fetcherPlugin = cpu.service(classOf[FetcherPlugin])
-        // baseSramCtrl.io.instBundle <> fetcherPlugin.instBundle
         val icachePlugin = cpu.service(classOf[ICachePlugin])
         baseSramCtrl.io.instBundle <> icachePlugin.instBundle
         baseSramCtrl.io.baseSram <> io.baseSram

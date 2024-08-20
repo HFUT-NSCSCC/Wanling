@@ -2,6 +2,7 @@ package myCPU.blackbox
 
 import spinal.core._
 
+// src: https://github.com/NOP-Processor/NOP-Core/blob/master/src/blackbox/mem/xpm_memory.scala
 class xpm_memory_sdpram_generic extends Generic {
   var ADDR_WIDTH_A = 6
   var ADDR_WIDTH_B = 6

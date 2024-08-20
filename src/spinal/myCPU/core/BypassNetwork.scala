@@ -6,6 +6,8 @@ import myCPU.core.LA32R.RegAddrWidth
 import myCPU.constants.ForwardType
 import myCPU.constants.FuType
 
+
+// 旁路网络
 class BypassNetwork extends Component{
     val io = new Bundle{
         val rsISS = in(UInt(RegAddrWidth bits))
@@ -22,7 +24,7 @@ class BypassNetwork extends Component{
         val regWriteValidEXE3 = in(Bool)
         val regWriteValidWB = in(Bool)
         val rsForwardType = out(Bits(ForwardType().getBitsWidth bits))
-        val forwardable = out(Bool)
+        val forwardable = out(Bool) // 若当前可以通过旁路获得最新的寄存器数据，则为true
     }
     io.rsForwardType := Select(
         (io.rsISS =/= 0 && io.rsISS === io.rdEXE1 && io.regWriteValidEXE1) -> ForwardType.FROMEXE1.asBits,

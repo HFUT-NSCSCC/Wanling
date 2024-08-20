@@ -7,6 +7,7 @@ import myCPU.InstBundle
 import spinal.lib.master
 import myCPU.core.LA32R.PC_INIT
 
+// 取指模块, 以被ICache替代
 class FetcherPlugin extends Plugin[Core]{
     val instBundle = master(InstBundle())
     val branchable = Bool

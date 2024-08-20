@@ -14,6 +14,8 @@ import spinal.lib.logic.Symplify
 import myCPU.constants._
 import myCPU.core.LA32R
 
+
+// 译码器, 参考自VexRiscv和NOP-Core
 class DecoderPlugin extends Plugin[Core]{
     val encodings = mutable.LinkedHashMap[MaskedLiteral, ArrayBuffer[(Stageable[_ <: BaseType], BaseType)]]()
     val defaults = mutable.LinkedHashMap[Stageable[_ <: BaseType], BaseType]()

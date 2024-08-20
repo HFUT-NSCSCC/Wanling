@@ -31,8 +31,8 @@ class ICachePlugin extends Plugin[Core]{
     val dataRAMs = 
         Seq.fill(icache.ways)(
             new SDPRAM(Vec(Bits(32 bits), icache.lineWords), icache.sets, false, useByteEnable = true)
-        )
-    // val infoRAM = new SDPRAM(CacheLineInfo(icache), icache.sets, false)
+            )
+    // 为了能够在当前周期获得缓存命中信息, 对info采用了异步存储的方法(对时序并不友好, 可以考虑使用NPC来发起请求, 但不方便调试, 且理解起来较难)
     val infoRAMASync = new SDPRAMAsync(CacheLineInfo(icache), icache.sets)
 
     object ICACHE_VALIDS extends Stageable(valids.dataType())
@@ -46,19 +46,13 @@ class ICachePlugin extends Plugin[Core]{
         instBundle.en := False
         instBundle.addr := 0
 
-        // val rPort = infoRAM.io.read
-        
         IF1 plug new Area {
             import IF1._
             val rValid = !pipeline.IF1.arbitration.isStuck
-            // val pcBeforeStuck = RegNextWhen[UInt](IF1.output(fetchSignals.PC), !IF1.arbitration.isStuck, init = PC_INIT)
             
             val rAddr = pipeline.IF1.output(fetchSignals.PC)
             val idx = rAddr(icache.indexRange)
             val tag = rAddr(icache.tagRange)
-            // val rAddr = Mux(refetchValid, pipeline.IF1.output(fetchSignals.PC), pipeline.IF1.output(fetchSignals.NPC))
-            // rPort.cmd.valid := rValid
-            // rPort.cmd.payload := idx
     
             val dataRs = Vec(dataRAMs.map(_.io.read))
             dataRs.foreach{ p => 
@@ -71,7 +65,6 @@ class ICachePlugin extends Plugin[Core]{
             val hits = setValids.zip(infos.tags).map {case(valid, t) => 
                 valid && t === tag    
             }
-            // val hit = hits.
             val hit = hits.reduce(_ || _)
             insert(ICACHE_HIT) := hit
             insert(ICACHE_HITS) := Vec(hits(0), hits(1))
@@ -89,13 +82,11 @@ class ICachePlugin extends Plugin[Core]{
             for (i <- 0 until icache.ways) {
                 insert(ICACHE_RSPS)(i) := dataRAMs(i).io.read.rsp(pc(icache.wordOffsetRange))
             }
-            // insert(ICACHE_INFO) := rPort.rsp
             val idx = pc(icache.indexRange)
             val tag = pc(icache.tagRange)
             val offset = pc(icache.wordOffsetRange)
             val setValids = input(ICACHE_VALIDS)
 
-            // val wPort = infoRAM.io.write.setIdle()
             val wPortAsync = infoRAMASync.io.write.setIdle()
             val dataWs = Vec(dataRAMs.map(_.io.write.setIdle()))
             val dataMasks = Vec(dataRAMs.map(_.io.writeMask.clearAll().subdivideIn(4 bits, true)))
@@ -110,18 +101,18 @@ class ICachePlugin extends Plugin[Core]{
             val hitData = MuxOH(hits, input(ICACHE_RSPS))
             insert(fetchSignals.INST) := hitData
 
+            // 命中的时候对info进行更新
             when(hit) {
                 val newInfo = input(ICACHE_INFO).copy()
                 newInfo.tags := input(ICACHE_INFO).tags
                 newInfo.lru(0) := hits(0)
-                // wPort.valid.set()
-                // wPort.payload.address := idx
-                // wPort.payload.data := newInfo
                 wPortAsync.valid.set()
                 wPortAsync.payload.address := idx
                 wPortAsync.payload.data := newInfo
             }
 
+            // 缓存缺失处理的状态机设计
+            // 状态机设计: https://jiunian-pic-1310185536.cos.ap-nanjing.myqcloud.com/image-20240820213152504.png
             val cacheRefillFSM = new StateMachine{
                 val READ = new State
                 val COMMIT = new State

@@ -12,6 +12,7 @@ import myCPU.builder.Stageable
 // import myCPU.pipeline.fetch.ImmExtForBranch
 import myCPU.pipeline.decode.ImmExt
 
+// 分支执行单元, 已被集成在BPU(分支预测模块)中
 class BRUPlugin extends Plugin[Core]{
     object BRANCH extends Stageable(Bool)
     object BRANCH_TARGET extends Stageable(UInt(32 bits))
@@ -25,6 +26,7 @@ class BRUPlugin extends Plugin[Core]{
         import pipeline.config._
         val pcManager = service(classOf[PCManagerPlugin])
 
+        // 简单的分支预测, 根据跳转的方向进行静态预测
         IF2 plug new Area{
             import IF2._
             val inst = output(fetchSignals.INST)
@@ -45,6 +47,7 @@ class BRUPlugin extends Plugin[Core]{
             insert(fetchSignals.PREJUMP) := preJump
         }
         
+        // 根据从寄存器中取出的数据, 判断是否进行跳转和跳转目标的计算(设计的似乎不太合理)
         ISS plug new Area{
             import ISS._
             val src1 = input(decodeSignals.SRC1).asUInt

@@ -10,6 +10,7 @@ import myCPU.constants.OpSrc
 import _root_.myCPU.core.RegFilePlugin
 import _root_.myCPU.pipeline.decode
 
+// 记分牌, 为多发射准备, 最后被弃用
 class ScoreBoardPlugin extends Plugin[Core]{
     // 一个32位的记分牌, 记录每个寄存器的状态
     val scoreBoard = Vec(RegInit(False), 32)

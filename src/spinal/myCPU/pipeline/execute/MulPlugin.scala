@@ -10,6 +10,8 @@ import spinal.lib.math.MixedDivider
 import spinal.lib.math.UnsignedDivider
 import myCPU.blackbox.Divider
 
+
+// 乘除余插件, 利用了multiplier和divider ip核实现
 class MulPlugin extends Plugin[Core]{
     object OPA extends Stageable(SInt(32 bits))
     object OPB extends Stageable(SInt(32 bits))
@@ -80,6 +82,7 @@ class MulPlugin extends Plugin[Core]{
             val mulResult = mult.io.P.twoComplement(signed && (a.sign ^ b.sign)).asBits(0, 64 bits)
 
             // divider.io.rsp.ready := !arbitration.isStuckByOthers
+            // 若除法器未完成计算, 则对流水线进行阻塞
             arbitration.haltItself setWhen(arbitration.isValidOnEntry && input(DIVISION) && !divider.io.m_axis_dout_tvalid)
             val absQuotient = divider.io.m_axis_dout_tdata(63 downto 32).asUInt
             val absRemainder = divider.io.m_axis_dout_tdata(31 downto 0).asUInt

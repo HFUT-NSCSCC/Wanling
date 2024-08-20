@@ -27,6 +27,8 @@ object BridgeConf {
     def ADDR_MASK = B"32'x7fc0_0000"
 }
 
+// 将访存控制信号发送到正确的控制器上
+// 实现参考自: https://github.com/fluctlight001/cpu_for_nscscc2022_single/blob/main/thinpad_top.srcs/sources_1/new/Nova132A/bridge_1x3.v
 class Bridge extends Component{
     val io = new Bundle{
         val dBus = slave(DataBundle())
